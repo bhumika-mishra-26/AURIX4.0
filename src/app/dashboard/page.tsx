@@ -33,6 +33,7 @@ function DashboardContent() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
 
   const [selectedVuln, setSelectedVuln] = useState<Vulnerability | null>(null)
+  const [detailInitialTab, setDetailInitialTab] = useState<"code" | "poc" | "patch">("poc")
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [viewType, setViewType] = useState<"kanban" | "table">("kanban")
   const [showGuide, setShowGuide] = useState(true)
@@ -130,6 +131,12 @@ function DashboardContent() {
         mappedStatus = "remediation"
       } else {
         mappedStatus = (idx % 3 === 0) ? "triage" : (idx % 3 === 1) ? "exploiting" : "remediation"
+      }
+      // If mapped to Patch Review but no real patch exists → fall back to Triage Backlog
+      const PATCH_PLACEHOLDER = "# Blue Agent Remediation Patch"
+      const hasPatch = d.patch_code && typeof d.patch_code === "string" && d.patch_code.trim().length > 0 && !d.patch_code.trim().startsWith("# Blue Agent Remediation Patch")
+      if (mappedStatus === "remediation" && !hasPatch) {
+        mappedStatus = "triage"
       }
       // Normalise category → layer
       const cat = (d.category || "").toLowerCase()
@@ -705,6 +712,7 @@ function DashboardContent() {
             <VulnerabilityKanban 
               vulnerabilities={filteredVulnerabilities}
               onSelectVuln={(v) => {
+                setDetailInitialTab("poc");
                 setSelectedVuln(v);
               }}
               onUpdateStatus={handleUpdateStatus}
@@ -712,12 +720,11 @@ function DashboardContent() {
           ) : (
             <div className="bg-white dark:bg-slate-950/40 p-4 border border-slate-200 dark:border-slate-850 rounded-xl">
               <VulnerabilityTable 
-                vulnerabilities={filteredVulnerabilities.map(v => ({
-                  file: v.file,
-                  layer: v.layer,
-                  severity: v.severity,
-                  cvss: v.cvss
-                }))}
+                vulnerabilities={filteredVulnerabilities}
+                onSelectVuln={(v, tab) => {
+                  setDetailInitialTab(tab || "poc");
+                  setSelectedVuln(v);
+                }}
               />
             </div>
           )}
@@ -727,6 +734,7 @@ function DashboardContent() {
         {/* DETAILED VIEW MODAL */}
         <VulnerabilityDetail 
           vuln={selectedVuln} 
+          initialTab={detailInitialTab}
           onClose={() => setSelectedVuln(null)} 
           onApplyFix={handleApplyFix}
           repoUrl={activeRepoName || (typeof window !== "undefined" ? localStorage.getItem("aurix_repo_url") || localStorage.getItem("aurix_scanned_repo") || "" : "")}
