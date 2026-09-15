@@ -570,7 +570,7 @@ function ResultsContent() {
                             <div className="flex items-center gap-2 text-orange-400 font-mono text-xs font-bold">
                               <Terminal size={14} className="text-orange-500" />
                               <span>RED AGENT EXPLOIT CODE</span>
-                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300">PoC</span>
+                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300">Masked PoC</span>
                             </div>
                             <button
                               onClick={() => copyToClipboard(v.pocScript, `poc-${v.id}`)}
@@ -590,6 +590,14 @@ function ResultsContent() {
                             </button>
                           </div>
                           
+                          {/* Masked Exploit Notice */}
+                          <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-start gap-2 text-[11px] text-amber-200 leading-relaxed">
+                            <AlertCircle size={13} className="shrink-0 text-amber-400 mt-0.5" />
+                            <span>
+                              <strong>Security Note:</strong> This is a <strong>masked version of the real exploit</strong>. It does not provide actionable attack code, but serves to assure users that automated wargaming has happened and the patch is verified internally by our system.
+                            </span>
+                          </div>
+
                           <div className="p-4 flex-1 overflow-x-auto font-mono text-xs text-orange-300/90 leading-relaxed max-h-96">
                             <pre className="whitespace-pre-wrap break-words">{v.pocScript}</pre>
                           </div>
