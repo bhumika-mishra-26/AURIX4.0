@@ -97,21 +97,29 @@ export default function ScanPage() {
         const authTok = typeof window !== "undefined" ? localStorage.getItem("aurix_token") : null
         const username = user?.user_metadata?.user_name || user?.user_metadata?.preferred_username || user?.email?.split("@")[0] || ""
 
-        // Call backend dynamic GitHub repos fetcher
-        const queryParams = new URLSearchParams()
-        if (username) queryParams.set("username", username)
-        if (ghToken) queryParams.set("gh_token", ghToken)
-
-        const headers: Record<string, string> = {}
-        if (authTok) headers["Authorization"] = `Bearer ${authTok}`
-        if (ghToken) headers["x-github-token"] = ghToken
-
-        const res = await fetch(`/api/github/repos?${queryParams.toString()}`, { headers })
-        if (res.ok) {
-          const data = await res.json()
-          if (Array.isArray(data.repos) && data.repos.length > 0) {
-            setUserRepos(data.repos)
-            return
+        // If authenticated ghToken is available, fetch user repos directly from GitHub API
+        if (ghToken) {
+          try {
+            const authGhRes = await fetch("https://api.github.com/user/repos?sort=updated&per_page=50", {
+              headers: {
+                Authorization: `Bearer ${ghToken}`,
+                Accept: "application/vnd.github.v3+json"
+              }
+            })
+            if (authGhRes.ok) {
+              const data = await authGhRes.json()
+              if (Array.isArray(data) && data.length > 0) {
+                setUserRepos(data.map((r: any) => ({
+                  id: r.id,
+                  name: r.name,
+                  full_name: r.full_name,
+                  private: r.private
+                })))
+                return
+              }
+            }
+          } catch (ghErr) {
+            console.warn("Direct GitHub token repos fetch notice:", ghErr)
           }
         }
 
