@@ -33,7 +33,7 @@ function DashboardContent() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
 
   const [selectedVuln, setSelectedVuln] = useState<Vulnerability | null>(null)
-  const [detailInitialTab, setDetailInitialTab] = useState<"code" | "poc" | "patch">("poc")
+  const [detailInitialTab, setDetailInitialTab] = useState<"code" | "patch">("patch")
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [viewType, setViewType] = useState<"kanban" | "table">("kanban")
   const [showGuide, setShowGuide] = useState(true)
@@ -712,7 +712,7 @@ function DashboardContent() {
             <VulnerabilityKanban 
               vulnerabilities={filteredVulnerabilities}
               onSelectVuln={(v) => {
-                setDetailInitialTab("poc");
+                setDetailInitialTab("patch");
                 setSelectedVuln(v);
               }}
               onUpdateStatus={handleUpdateStatus}
@@ -722,7 +722,7 @@ function DashboardContent() {
               <VulnerabilityTable 
                 vulnerabilities={filteredVulnerabilities}
                 onSelectVuln={(v, tab) => {
-                  setDetailInitialTab(tab || "poc");
+                  setDetailInitialTab(tab === "poc" ? "patch" : (tab || "patch"));
                   setSelectedVuln(v);
                 }}
               />
