@@ -170,7 +170,7 @@ export default function SecurityChatbot({ selectedVuln, isOpen, onClose, allVuln
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: "assistant", 
-      content: "Hello! I am **AURIX Tutor**. Ask me anything about vulnerabilities in your repository, PoC exploit scripts, or automated patch fixes." 
+      content: "Hey there! 👋 I'm **AURIX Tutor**, your AI DevSecOps pair-programmer. Click any vulnerability card to load its code context, or ask me anything about security findings, exploit analysis, or automated patches!" 
     }
   ])
   const [input, setInput] = useState("")
@@ -188,7 +188,7 @@ export default function SecurityChatbot({ selectedVuln, isOpen, onClose, allVuln
         ...prev,
         { 
           role: "assistant", 
-          content: `I've loaded security context for **${selectedVuln.vuln}** in \`${selectedVuln.file.split("/").pop()}\`. How can I help you analyze the exploit PoC or remediation patch?` 
+          content: `Hey! I've loaded the context for **${selectedVuln.vuln}** in \`${selectedVuln.file.split("/").pop()}\`. Would you like me to explain how this flaw can be exploited, or walk you through the Blue Agent's patch fix?` 
         }
       ])
     }
@@ -239,30 +239,25 @@ export default function SecurityChatbot({ selectedVuln, isOpen, onClose, allVuln
       console.warn("AURIX Tutor API call error:", err)
     }
 
-    // Contextual fallback response generator when offline / LLM unavailable
+    // Conversational fallback response generator when offline / LLM unavailable
     let reply = ""
     const query = promptText.toLowerCase()
 
     if (selectedVuln) {
       if (query.includes("poc") || query.includes("exploit")) {
-        reply = `The **Red Agent** generated a Proof-of-Concept exploit script for **${selectedVuln.vuln}** in \`${selectedVuln.file}\`.\n\n` +
-          `### Exploit Verification:\n` +
-          `- **Vulnerable Line**: ${selectedVuln.codeLine}\n` +
-          `- **Execution Method**: Simulates untrusted payload that bypasses input boundaries.\n` +
-          `- **True Positive Proof**: Executed inside an ephemeral, network-isolated Docker sandbox to prove real-world exploitability.\n\n` +
-          `Would you like to review the Blue Agent's suggested patch diff?`
+        reply = `Hey! Taking a look at the Proof-of-Concept for **${selectedVuln.vuln}**:\n\n` +
+          `AURIX's Red Agent generated a **masked wargaming PoC** for line **${selectedVuln.codeLine}** in \`${selectedVuln.file}\`. ` +
+          `To protect user systems, this script is safely masked to verify internally that the vulnerability exists and that our fix holds up under wargame testing.\n\n` +
+          `Would you like me to explain how attackers usually trigger this issue, or should we review the patch diff together?`
       } else if (query.includes("patch") || query.includes("fix") || query.includes("remediat")) {
-        reply = `The **Blue Agent** generated an automated remediation patch for **${selectedVuln.vuln}** in \`${selectedVuln.file}\`.\n\n` +
-          `### Patch Details:\n` +
-          `- Replaces unescaped variables with parameterized / sanitized queries.\n` +
-          `- **Wargame Result**: The exploit script was re-run against the patch and was successfully neutralized.\n` +
-          `- Click **"One-Click GitHub PR Fix"** in the details view to merge this fix.`
+        reply = `Here is how the Blue Agent patch resolves **${selectedVuln.vuln}**:\n\n` +
+          `The remediation replaces unsafe execution logic with secure parameterization and strict input validation. ` +
+          `Our internal wargame simulation confirmed that the exploit is 100% neutralized.\n\n` +
+          `💡 **Quick Tip**: You can click **"Implement PR Fix"** in the details view to open an automated Pull Request right now!`
       } else {
-        reply = `### Security Analysis: **${selectedVuln.vuln}**\n\n` +
-          `- **File**: \`${selectedVuln.file}\` (Line ${selectedVuln.codeLine})\n` +
-          `- **Severity**: **${selectedVuln.severity}** (CVSS ${selectedVuln.cvss})\n` +
-          `- **Layer**: ${selectedVuln.layer}\n\n` +
-          `This issue presents an attack surface where untrusted parameters can alter execution flow. We recommend applying the Blue Agent's patch.`
+        reply = `Looking at **${selectedVuln.vuln}** (${selectedVuln.severity} severity, CVSS ${selectedVuln.cvss}):\n\n` +
+          `This issue is in \`${selectedVuln.file}\` at line **${selectedVuln.codeLine}**. It typically arises when user input is accepted without validation.\n\n` +
+          `Let me know what you'd like to inspect next — I can explain the attack vector, guide you through the code fix, or show you how to verify it!`
       }
     } else if (allVulns && allVulns.length > 0) {
       let tableMd = `| Vulnerability | Severity | Layer | File | Line |\n| --- | --- | --- | --- | --- |\n`
@@ -271,14 +266,14 @@ export default function SecurityChatbot({ selectedVuln, isOpen, onClose, allVuln
         tableMd += `| **${v.vuln}** | **${v.severity}** | ${v.layer} | \`${fileName}\` | ${v.codeLine || 'N/A'} |\n`
       })
 
-      reply = `### AURIX Security Report for **${targetRepo || 'your repository'}**\n\n` +
-        `AURIX identified **${allVulns.length}** verified security vulnerabilities in your codebase:\n\n` +
+      reply = `Here is your security overview for **${targetRepo || 'your repository'}**:\n\n` +
+        `We found **${allVulns.length}** verified security findings:\n\n` +
         tableMd + `\n` +
-        `Select any vulnerability card on the Kanban board to view the Red Agent PoC script and Blue Agent patch!`
+        `Click on any vulnerability card on the board and we can dive into the exact line of code together!`
     } else {
-      reply = `Hello! I am **AURIX Tutor**.\n\n` +
-        `I can analyze any vulnerability detected by AURIX scanners, explain exploit PoCs generated by the Red Agent, or review patches from the Blue Agent.\n\n` +
-        `Click on any vulnerability card in the Kanban board to load its code context!`
+      reply = `Hey! I'm **AURIX Tutor**.\n\n` +
+        `Whenever you select a vulnerability on the board, I'll load all its details so we can analyze the code, understand the threat, and review the automated fix together.\n\n` +
+        `What would you like to explore today?`
     }
 
     setIsTyping(false)
