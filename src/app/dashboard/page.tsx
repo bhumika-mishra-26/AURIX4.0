@@ -20,11 +20,13 @@ import {
   LogOut,
   User as UserIcon,
   RefreshCw,
-  Loader2
+  Loader2,
+  PlusCircle
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { supabase } from "@/services/supabaseClient"
 import { apiClient } from "@/lib/api"
+import Navbar from "@/components/navbar"
 
 function DashboardContent() {
   const router = useRouter()
@@ -44,6 +46,20 @@ function DashboardContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [severityFilter, setSeverityFilter] = useState<string>("All")
   const [layerFilter, setLayerFilter] = useState<string>("All")
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Time-based greeting helper (runs client-side only, so no SSR mismatch)
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour >= 5 && hour < 12)  return { text: "Good Morning",  emoji: "🌅" }
+    if (hour >= 12 && hour < 17) return { text: "Good Afternoon", emoji: "☀️" }
+    if (hour >= 17 && hour < 21) return { text: "Good Evening",  emoji: "🌆" }
+    return { text: "Good Night", emoji: "🌙" }
+  }
 
   // Dynamic Executive Summary computation from active findings
   const generateDynamicSummary = (vulns: Vulnerability[]) => {
@@ -145,6 +161,19 @@ function DashboardContent() {
       const rawSev = (d.severity || "High") as string
       const severity = (rawSev.charAt(0).toUpperCase() + rawSev.slice(1).toLowerCase()) as Vulnerability["severity"]
 
+      const decodeB64 = (str?: string | null) => {
+        if (!str) return ""
+        const trimmed = str.trim()
+        if (trimmed.includes(" ") || trimmed.includes("\n") || trimmed.includes("//") || trimmed.includes("#")) return str
+        if (/^[A-Za-z0-9+/=]+$/.test(trimmed) && trimmed.length >= 8 && trimmed.length % 4 === 0) {
+          try {
+            const decoded = typeof window !== "undefined" ? atob(trimmed) : Buffer.from(trimmed, "base64").toString("utf-8")
+            if (decoded && decoded.trim().length > 0) return decoded
+          } catch {}
+        }
+        return str
+      }
+
       return {
         id: d.id || `backend-vuln-${idx}`,
         file: d.file_path || "src/index.js",
@@ -154,9 +183,9 @@ function DashboardContent() {
         cvss: d.cvss || 8.5,
         status: mappedStatus,
         codeLine: d.line_number || 1,
-        vulnCode: d.evidence || "// Code flag identified by scanner",
-        pocScript: d.poc_script || "# Red Agent PoC Exploit Script",
-        patchCode: d.patch_code || "# Blue Agent Remediation Patch"
+        vulnCode: decodeB64(d.evidence || "// Code flag identified by scanner"),
+        pocScript: decodeB64(d.poc_script || "# Red Agent PoC Exploit Script"),
+        patchCode: decodeB64(d.patch_code || "# Blue Agent Remediation Patch")
       }
     }
 
@@ -341,79 +370,58 @@ function DashboardContent() {
     : Math.min(10, Math.round((activeVulns.reduce((sum, v) => sum + (v.cvss || 5.0), 0) / 3.0) * 100) / 100)
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 font-sans p-6 md:p-10 relative overflow-hidden transition-colors duration-300">
-      
-      {/* BACKGROUND DECO */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-0 w-[40%] h-[40%] rounded-full bg-orange-500/5 dark:bg-orange-500/5 blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[45%] h-[45%] rounded-full bg-blue-500/5 dark:bg-blue-500/5 blur-[120px]" />
-      </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 font-sans flex flex-col transition-colors duration-300">
+      {/* Universal Nav Header */}
+      <Navbar onOpenTutor={() => setIsChatOpen(!isChatOpen)} />
 
-      <div className="relative z-10 max-w-7xl mx-auto space-y-6">
-        
-        {/* NAVBAR */}
-        <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-900 pb-5">
-          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push("/")}>
-            <div className="p-1.5 rounded-lg bg-orange-500 text-slate-950 font-bold group-hover:rotate-12 transition-transform">
-              <ShieldCheck size={24} />
-            </div>
-            <h1 className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
-              AURIX<span className="text-orange-500">.</span>
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className="px-4 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 rounded-xl text-xs font-semibold flex items-center gap-2 text-slate-650 dark:text-slate-350 hover:text-slate-950 dark:hover:text-white transition shadow-sm cursor-pointer"
-              title="Open AURIX Tutor"
-            >
-              <MessageSquare size={14} className="text-orange-500" />
-              AURIX Tutor
-            </button>
-            <button
-              onClick={() => {
-                if (!isAuthenticated && !user) {
-                  router.push("/login?redirect=/scan")
-                  return
-                }
-                router.push("/scan")
-              }}
-              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-xl text-xs hover:scale-[1.02] shadow shadow-orange-500/5 transition cursor-pointer"
-            >
-              Start Scan
-            </button>
-
-            <button
-              onClick={() => setRefreshKey(k => k + 1)}
-              disabled={isFetchingFindings}
-              title="Refresh findings from backend"
-              className="p-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl text-slate-500 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 transition shadow-sm disabled:opacity-50"
-            >
-              {isFetchingFindings ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-            </button>
-
-            {user && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-700 dark:text-slate-300">
-                <UserIcon size={12} className="text-orange-500" />
-                <span className="truncate max-w-[140px]" title={user.user_metadata?.user_name || user.user_metadata?.full_name || user.email || ""}>
-                  {user.user_metadata?.user_name || user.user_metadata?.preferred_username || user.user_metadata?.full_name || user.email?.split("@")[0] || "Agent"}
-                </span>
-              </div>
-            )}
-
-            <button
-              onClick={async () => {
-                await logout()
-                router.push("/login")
-              }}
-              className="p-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition shadow-sm cursor-pointer"
-              title="Sign Out Session"
-            >
-              <LogOut size={16} />
-            </button>
-          </div>
+      <main className="flex-1 p-6 md:p-10 relative overflow-hidden">
+        {/* BACKGROUND DECO */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute top-0 right-0 w-[40%] h-[40%] rounded-full bg-orange-500/5 dark:bg-orange-500/5 blur-[120px]" />
+          <div className="absolute bottom-0 left-0 w-[45%] h-[45%] rounded-full bg-blue-500/5 dark:bg-blue-500/5 blur-[120px]" />
         </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto space-y-6">
+          
+          {/* DASHBOARD PAGE HEADER & CONTROLS */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-900">
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                Security Posture Dashboard
+                {activeRepoName && (
+                  <span className="text-xs font-mono font-normal px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                    {activeRepoName.split("/").pop()?.replace(/\.git$/, "") || activeRepoName}
+                  </span>
+                )}
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                {(() => { 
+                  const g = getGreeting(); 
+                  const userName = mounted ? (user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Analyst") : "Analyst";
+                  return `${g.emoji} ${g.text}, ${userName} — live threat telemetry and autonomous patch orchestration.`; 
+                })()}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setRefreshKey(k => k + 1)}
+                disabled={isFetchingFindings}
+                title="Refresh findings from backend"
+                className="px-3.5 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400 transition shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+              >
+                <RefreshCw size={13} className={isFetchingFindings ? "animate-spin" : ""} />
+                <span>Refresh</span>
+              </button>
+              <button
+                onClick={() => router.push("/scan")}
+                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-xl text-xs hover:scale-[1.02] shadow shadow-orange-500/10 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <PlusCircle size={14} />
+                <span>New Scan</span>
+              </button>
+            </div>
+          </div>
 
         {/* SUMMARY STATS (WITH INTERACTIVE FILTER TRIGGERS & TOOLTIPS) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -539,7 +547,7 @@ function DashboardContent() {
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Threat Landscape Executive Summary</h3>
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-100 leading-relaxed font-mono text-justify max-w-5xl min-h-[60px]">
+              <p className="text-xs text-slate-600 dark:text-slate-100 leading-relaxed text-justify max-w-5xl min-h-[60px]">
                 {summaryText}
                 {/* Only show blinking cursor while still typing */}
                 {summaryIndex < fullSummary.length && (
@@ -673,22 +681,31 @@ function DashboardContent() {
               </div>
             </div>
           ) : vulnerabilities.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center space-y-4 font-mono">
-              <div className="p-4 bg-white dark:bg-slate-900/40 rounded-full border border-slate-200 dark:border-slate-850 text-emerald-500">
+            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 font-mono">
+              <div className="p-4 bg-white dark:bg-slate-900/60 rounded-full border border-slate-200 dark:border-slate-800 text-emerald-500 shadow-sm">
                 <ShieldCheck size={36} />
               </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">No Threat Vectors Detected</h4>
-                <p className="text-xs text-slate-500 max-w-sm font-sans leading-relaxed">
-                  Zero vulnerabilities were found for this scan. The repository is secure, or background wargaming is actively analyzing new ingestion.
+              <div className="space-y-1.5 max-w-md">
+                <h4 className="text-base font-bold text-slate-800 dark:text-slate-200">Welcome to AURIX Intelligence</h4>
+                <p className="text-xs text-slate-500 max-w-md font-sans leading-relaxed">
+                  No active vulnerabilities are currently loaded. Launch a high-precision security assessment to run AST scanning, SAST rules, and Red/Blue agentic wargaming on your codebase.
                 </p>
               </div>
-              <button
-                onClick={() => router.push("/scan")}
-                className="px-4 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs font-semibold text-orange-500 hover:text-orange-400 rounded-lg transition cursor-pointer shadow-sm"
-              >
-                Scan Another Repository →
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={() => router.push("/scan")}
+                  className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-xl text-xs hover:scale-105 transition shadow-md shadow-orange-500/20 cursor-pointer flex items-center gap-2"
+                >
+                  <PlusCircle size={14} />
+                  <span>Launch First Scan</span>
+                </button>
+                <button
+                  onClick={() => router.push("/history")}
+                  className="px-4 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-white rounded-xl transition cursor-pointer"
+                >
+                  Browse Scan History
+                </button>
+              </div>
             </div>
           ) : filteredVulnerabilities.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center space-y-4 font-mono">
@@ -754,6 +771,7 @@ function DashboardContent() {
         
       </div>
     </main>
+    </div>
   )
 }
 

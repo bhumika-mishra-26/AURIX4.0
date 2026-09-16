@@ -46,7 +46,7 @@ export default function LoginPage() {
         }
       } else if (accessToken) {
         authService.setToken(accessToken)
-        router.push("/scan")
+        router.push("/dashboard")
       }
     }
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
 
     try {
       const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
-      const destination = searchParams?.get("redirect") || "/scan"
+      const destination = searchParams?.get("redirect") || "/dashboard"
 
       if (isLogin) {
         await authService.login(email, password)

@@ -84,18 +84,41 @@ export const scansApi = {
     })
   },
 
-  submitZip: (file: File, project_id?: string) => {
+  submitZip: async (file: File, project_id?: string) => {
+    let targetProjectId = project_id
+    if (!targetProjectId) {
+      try {
+        const repoName = file.name.replace(/\.zip$/i, "") || "Uploaded Zip Project"
+        const projRes = await projectsApi.create(repoName, `zip://${file.name}`)
+        if (projRes?.project?.id) {
+          targetProjectId = projRes.project.id
+        }
+      } catch (e) {
+        console.warn("Auto-project creation warning for zip:", e)
+      }
+    }
+
     const token = authService.getToken()
     const form = new FormData()
     form.append("source_code", file)
-    if (project_id) {
-      form.append("project_id", project_id)
+    if (targetProjectId) {
+      form.append("project_id", targetProjectId)
     }
-    return fetch("/api/scans/upload", {
+
+    const url = buildUrl("/api/scans/upload")
+    const response = await fetch(url, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: form,
-    }).then(r => r.json())
+    })
+
+    const data = await response.json().catch(() => ({}))
+
+    if (!response.ok) {
+      throw new Error(data.error || `Upload failed with status ${response.status}`)
+    }
+
+    return data
   },
 
   getStatus: (scan_id: string) => apiClient(`/api/scans/${scan_id}`),

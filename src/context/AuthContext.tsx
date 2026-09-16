@@ -23,8 +23,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const [user, setUser] = useState<UserProfile | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+
+  // Seed state synchronously from localStorage to prevent blank flash on client-side navigation
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      return authService.getUser()
+    }
+    return null
+  })
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return authService.getToken()
+    }
+    return null
+  })
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   // Initialize from localStorage and listen to Supabase Auth session
@@ -71,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (type !== "recovery") {
               window.history.replaceState(null, "", window.location.pathname)
               if (currentPath === "/" || currentPath === "/login" || currentPath === "/auth/callback") {
-                router.push("/scan")
+                router.push("/dashboard")
                 return
               }
             }
@@ -91,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (type === "signup" || searchParams.has("code") || accessToken) {
               if (currentPath === "/" || currentPath === "/login" || currentPath === "/auth/callback") {
-                router.push("/scan")
+                router.push("/dashboard")
                 return
               }
             }
@@ -116,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const currentPath = window.location.pathname
                 if (event === "SIGNED_IN" || event === "USER_UPDATED") {
                   if (currentPath === "/" || currentPath === "/login" || currentPath === "/auth/callback") {
-                    router.push("/scan")
+                    router.push("/dashboard")
                   }
                 }
               }

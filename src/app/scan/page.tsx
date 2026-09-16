@@ -19,10 +19,14 @@ import {
   ChevronRight,
   RefreshCw,
   Lock,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeft,
+  History,
+  LayoutDashboard
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { apiClient, scansApi } from "@/lib/api"
+import Navbar from "@/components/navbar"
 
 type Tab = "github" | "url" | "zip"
 
@@ -165,83 +169,106 @@ export default function ScanPage() {
     const scanIdToPoll = pendingScanId || (typeof window !== "undefined" ? localStorage.getItem("aurix_current_scan_id") : null)
     if (!scanIdToPoll) return
 
+    let simulatedProgress = 10
+
     const pollInterval = setInterval(async () => {
       try {
-        const res = await apiClient(`/api/scans/${scanIdToPoll}/progress`)
+        // Fetch progress details and main scan status in parallel
+        const [res, scanDetail] = await Promise.all([
+          apiClient(`/api/scans/${scanIdToPoll}/progress`).catch(() => null),
+          apiClient(`/api/scans/${scanIdToPoll}`).catch(() => null)
+        ])
+
+        const isCompleted = res?.status === "COMPLETED" || scanDetail?.status === "COMPLETED" || (res?.total_findings !== undefined && res.total_findings > 0) || (scanDetail?.total_findings !== undefined && scanDetail.total_findings > 0)
+        const isFailed = res?.status === "FAILED" || scanDetail?.status === "FAILED"
+
+        if (isCompleted) {
+          setIsScanComplete(true)
+          setRealProgressPct(100)
+          setSteps(prev => prev.map(s => ({ ...s, status: "success" })))
+
+          const logTexts = [
+            ...(Array.isArray(res?.logs) ? res.logs : []),
+            ...(Array.isArray(scanDetail?.logs) ? scanDetail.logs : [])
+          ].map((l: any) => typeof l === "string" ? l : (l.message || "")).join("\n")
+
+          const match = logTexts.match(/(\d+)\s+exploitable\s+found/i) || logTexts.match(/(\d+)\s+findings/i)
+          if (match) {
+            setTotalFindingsFound(parseInt(match[1], 10))
+          } else {
+            const count = scanDetail?.summary?.total_findings ?? scanDetail?.total_findings ?? (Array.isArray(scanDetail?.findings) ? scanDetail.findings.length : 0)
+            if (count !== undefined) setTotalFindingsFound(count)
+          }
+
+          clearInterval(pollInterval)
+          return
+        }
+
+        if (isFailed) {
+          setIsScanComplete(true)
+          setRealProgressPct(100)
+          setSteps(prev => prev.map((s, idx) => idx === 0 ? { ...s, status: "error" } : s))
+          if (res?.logs && Array.isArray(res.logs)) setRealTimeLogs(res.logs)
+          clearInterval(pollInterval)
+          return
+        }
+
         if (res) {
-          if (res.progress !== undefined) setRealProgressPct(res.progress)
-          const stepVal = res.current_step || res.step || ""
-          if (stepVal) setRealStepName(stepVal)
-          if (res.logs && Array.isArray(res.logs)) setRealTimeLogs(res.logs)
-          if (res.current_file) setCurrentFileScanned(res.current_file)
-          
-          // Extract findings count from progress object OR parse log message if present
-          let findingsCount = res.total_findings ?? res.summary?.total_findings ?? res.findings_count
-          
-          if (Array.isArray(res.logs) && res.logs.length > 0) {
-            const logTexts = res.logs.map((l: any) => typeof l === "string" ? l : (l.message || "")).join("\n")
-            const match = logTexts.match(/(\d+)\s+exploitable\s+found/i) || logTexts.match(/(\d+)\s+findings/i)
-            if (match) {
-              findingsCount = parseInt(match[1], 10)
+          const rawProgress = res.progress ?? scanDetail?.progress
+          if (rawProgress !== undefined && rawProgress > 0) {
+            simulatedProgress = Math.max(simulatedProgress, rawProgress)
+          } else {
+            // Smoothly advance progress while scan is active so it never freezes at 0%
+            if (simulatedProgress < 90) {
+              simulatedProgress = Math.min(90, simulatedProgress + Math.floor(Math.random() * 4) + 2)
             }
           }
 
+          setRealProgressPct(simulatedProgress)
+
+          const stepVal = res.current_step || res.step || scanDetail?.current_step || ""
+          if (stepVal) setRealStepName(stepVal)
+          if (res.logs && Array.isArray(res.logs) && res.logs.length > 0) {
+            setRealTimeLogs(res.logs)
+          }
+          if (res.current_file) setCurrentFileScanned(res.current_file)
+
+          let findingsCount = res.total_findings ?? res.summary?.total_findings ?? scanDetail?.summary?.total_findings
+          if (Array.isArray(res.logs) && res.logs.length > 0) {
+            const logTexts = res.logs.map((l: any) => typeof l === "string" ? l : (l.message || "")).join("\n")
+            const match = logTexts.match(/(\d+)\s+exploitable\s+found/i) || logTexts.match(/(\d+)\s+findings/i)
+            if (match) findingsCount = parseInt(match[1], 10)
+          }
           if (findingsCount !== undefined) setTotalFindingsFound(findingsCount)
 
-          // Step mapping based on real backend step
+          // Map active step index dynamically based on step text or percentage
           const backendStep = stepVal.toLowerCase()
           let activeIndex = 0
 
           if (backendStep.includes("ingest")) activeIndex = 0
-          else if (backendStep.includes("sast") || backendStep.includes("scan")) activeIndex = 1
+          else if (backendStep.includes("sast") || backendStep.includes("slicing")) activeIndex = 1
           else if (backendStep.includes("triage") || backendStep.includes("context") || backendStep.includes("ai")) activeIndex = 2
           else if (backendStep.includes("wargam") || backendStep.includes("red")) activeIndex = 3
           else if (backendStep.includes("remediat") || backendStep.includes("blue") || backendStep.includes("patch")) activeIndex = 4
-          else if (res.status === "COMPLETED" || backendStep === "completed") activeIndex = 5
-
-          if (res.status === "COMPLETED" || backendStep === "completed") {
-            setIsScanComplete(true)
-            setRealProgressPct(100)
-            setSteps(prev => prev.map(s => ({ ...s, status: "success" })))
-            clearInterval(pollInterval)
-            // Fetch final scan object to get exact findings count if missing in progress
-            try {
-              const finalScan = await apiClient(`/api/scans/${scanIdToPoll}`)
-              if (finalScan) {
-                // If logs explicitly state exploitable count (e.g. 23 exploitable found), keep log count
-                const logTexts = [
-                  ...(Array.isArray(res.logs) ? res.logs : []),
-                  ...(Array.isArray(finalScan.logs) ? finalScan.logs : [])
-                ].map((l: any) => typeof l === "string" ? l : (l.message || "")).join("\n")
-
-                const match = logTexts.match(/(\d+)\s+exploitable\s+found/i)
-                if (match) {
-                  setTotalFindingsFound(parseInt(match[1], 10))
-                } else {
-                  const count = finalScan.summary?.total_findings ?? (Array.isArray(finalScan.findings) ? finalScan.findings.length : 0)
-                  if (count !== undefined) setTotalFindingsFound(count)
-                }
-              }
-            } catch (err) {
-              console.warn("Error fetching final scan details:", err)
-            }
-          } else if (res.status === "FAILED" || backendStep === "failed") {
-            setIsScanComplete(true)
-            setRealProgressPct(100)
-            setSteps(prev => prev.map((s, idx) => idx === 0 ? { ...s, status: "error" } : s))
-            clearInterval(pollInterval)
-          } else {
-            setSteps(prev => prev.map((s, idx) => {
-              if (idx < activeIndex) return { ...s, status: "success" }
-              if (idx === activeIndex) return { ...s, status: "running" }
-              return { ...s, status: "idle" }
-            }))
+          else {
+            // Fallback step index based on progress percentage
+            if (simulatedProgress < 20) activeIndex = 0
+            else if (simulatedProgress < 45) activeIndex = 1
+            else if (simulatedProgress < 70) activeIndex = 2
+            else if (simulatedProgress < 88) activeIndex = 3
+            else activeIndex = 4
           }
+
+          setSteps(prev => prev.map((s, idx) => {
+            if (idx < activeIndex) return { ...s, status: "success" }
+            if (idx === activeIndex) return { ...s, status: "running" }
+            return { ...s, status: "idle" }
+          }))
         }
       } catch (err) {
         console.warn("Progress poll error:", err)
       }
-    }, 800)
+    }, 1000)
 
     return () => clearInterval(pollInterval)
   }, [isScanning, pendingScanId])
@@ -271,6 +298,8 @@ export default function ScanPage() {
     setRealTimeLogs(["[INIT] Initializing AURIX Security Analysis Gate..."])
 
     let activeScanId: string | null = null
+
+    let queueError: string | null = null
 
     try {
       if (activeTab === "url" && repoUrl) {
@@ -311,12 +340,13 @@ export default function ScanPage() {
       }
     } catch (err: any) {
       console.warn("Backend scan queue response:", err)
+      queueError = err?.message || "Failed to initiate scan"
     }
 
     // Only proceed to scanning UI if we got a valid scan ID from the backend
     if (!activeScanId) {
       setShowPreFlight(false)
-      setRealTimeLogs(prev => [...prev, "[ERROR] Failed to initiate scan. Check backend connection."])
+      setRealTimeLogs(prev => [...prev, `[ERROR] ${queueError || "Failed to initiate scan. Check backend connection."}`])
       return
     }
 
@@ -355,31 +385,98 @@ export default function ScanPage() {
     )
   }
 
-  if (!isAuthenticated && !user) {
+  // Check both React state and raw localStorage — state may not be populated yet
+  // on client-side navigation even when a valid token exists
+  const hasStoredToken = typeof window !== "undefined" && !!localStorage.getItem("aurix_token")
+
+  if (!isAuthenticated && !user && !hasStoredToken) {
     return null
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 relative overflow-hidden">
-      {/* Background glow effects */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-[20%] right-[10%] w-[35%] h-[35%] rounded-full bg-orange-500/5 blur-[120px]" />
-        <div className="absolute bottom-[20%] left-[10%] w-[35%] h-[35%] rounded-full bg-blue-500/5 blur-[120px]" />
-      </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
+      {/* Universal Nav Header */}
+      <Navbar showTutorButton={false} />
 
-      <div className="relative z-10 max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-900 pb-6 mb-10 gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <ShieldAlert className="text-orange-500" size={24} />
-              <h1 className="text-2xl font-bold tracking-tight text-white">AURIX Scanner Gate</h1>
-            </div>
-            <p className="text-sm text-slate-400">
-              Initiate high-performance vulnerability assessment powered by agentic wargaming.
-            </p>
-          </div>
+      <main className="flex-1 p-6 md:p-12 relative overflow-hidden">
+        {/* Background glow effects */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute top-[20%] right-[10%] w-[35%] h-[35%] rounded-full bg-orange-500/5 blur-[120px]" />
+          <div className="absolute bottom-[20%] left-[10%] w-[35%] h-[35%] rounded-full bg-blue-500/5 blur-[120px]" />
         </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto space-y-8">
+          {/* Top Breadcrumb / Quick Nav Bar */}
+          <div className="flex items-center justify-between pb-2">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition font-mono group cursor-pointer"
+            >
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+              <span>← Back to Security Dashboard</span>
+            </button>
+
+            <button
+              onClick={() => router.push("/history")}
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-orange-400 transition font-mono cursor-pointer"
+            >
+              <History size={13} />
+              <span>Past Scan History →</span>
+            </button>
+          </div>
+
+          {/* Header */}
+          <div className="border-b border-slate-900 pb-6">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500">
+                <ShieldAlert size={22} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                  AURIX Scanner Gate
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Engine Ready
+                  </span>
+                </h1>
+                <p className="text-xs text-slate-400 font-mono">
+                  Initiate autonomous vulnerability assessment and Red/Blue agentic wargaming.
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Context Guidance Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+              <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                  <Terminal size={14} className="text-orange-500" />
+                  <span>Dual Ingestion</span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Analyze public or private GitHub repos via git clone, or drag-and-drop a local ZIP codebase.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                  <Lock size={14} className="text-blue-400" />
+                  <span>Pre-Flight Guard</span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Automatic secret sanitization redacts .env keys, AWS credentials, and respects .gitignore rules.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                  <Sparkles size={14} className="text-amber-400" />
+                  <span>Agentic PoC & Patch</span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Red Agent synthesizes exploit PoCs while Blue Agent writes verified drop-in code fixes.
+                </p>
+              </div>
+            </div>
+          </div>
 
         {/* PRE-FLIGHT SECRET GUARD MODAL */}
         {showPreFlight && (
@@ -840,5 +937,6 @@ export default function ScanPage() {
         )}
       </div>
     </main>
+    </div>
   )
 }

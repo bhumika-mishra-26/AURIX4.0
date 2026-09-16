@@ -88,16 +88,26 @@ export default function Home() {
   const router = useRouter()
   const { isAuthenticated, user, isLoading } = useAuth()
   const [activeStep, setActiveStep] = useState(0)
+  const [mounted, setMounted] = useState(false)
 
-  // If already logged in, go to /scan; otherwise open login/signup page with return redirect
-  const scanTargetUrl = (isAuthenticated || user) ? "/scan" : "/login?redirect=/scan"
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Use a stable default until the component has mounted on the client.
+  // This prevents the SSR/client hydration mismatch caused by auth state
+  // being unknown on the server (always "unauthenticated") but resolved on
+  // the client after the AuthContext initialises.
+  const scanTargetUrl = mounted && (isAuthenticated || user)
+    ? "/dashboard"
+    : "/login?redirect=/dashboard"
 
   const handleScanNowClick = () => {
-    // Wait for auth to resolve — if authenticated go to scan, else go to login
+    // Wait for auth to resolve — if authenticated go to dashboard, else go to login
     if (isAuthenticated || user) {
-      router.push("/scan")
+      router.push("/dashboard")
     } else {
-      router.push("/login?redirect=/scan")
+      router.push("/login?redirect=/dashboard")
     }
   }
 
@@ -209,8 +219,10 @@ export default function Home() {
 
 <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
 
-<div className="flex items-center gap-2 group cursor-pointer">
-  <ShieldCheck className="text-orange-500 group-hover:rotate-12 transition-transform" size={28} />
+<div className="flex items-center gap-2.5 group cursor-pointer">
+  <div className="relative w-8 h-8 rounded-xl overflow-hidden group-hover:scale-105 transition-transform flex items-center justify-center">
+    <img src="/logo.png" alt="AURIX Logo" className="w-full h-full object-contain" />
+  </div>
   <h1 className="font-bold text-2xl tracking-tight text-white">
     AURIX<span className="text-orange-500">.</span>
   </h1>
@@ -225,17 +237,27 @@ export default function Home() {
 
 </div>
 
-<div className="flex items-center gap-4">
-  <Link href="/login">
-    <button className="px-5 py-2 bg-orange-500 text-white rounded-lg text-sm font-semibold hover:bg-orange-600 transition shadow-md shadow-orange-500/10 cursor-pointer">
-      Log in
-    </button>
-  </Link>
-  <Link href="/login">
-    <button className="px-5 py-2 bg-orange-500 text-white rounded-lg text-sm font-semibold hover:bg-orange-600 transition shadow-md shadow-orange-500/10 cursor-pointer">
-      Sign up
-    </button>
-  </Link>
+<div className="flex items-center gap-3">
+  {mounted && (isAuthenticated || user) ? (
+    <Link href="/dashboard">
+      <button className="px-5 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-lg text-sm hover:scale-105 transition shadow-md shadow-orange-500/20 cursor-pointer">
+        Dashboard →
+      </button>
+    </Link>
+  ) : (
+    <>
+      <Link href="/login">
+        <button className="px-4 py-2 text-slate-300 hover:text-white rounded-lg text-sm font-semibold transition cursor-pointer">
+          Log in
+        </button>
+      </Link>
+      <Link href="/login">
+        <button className="px-5 py-2 bg-orange-500 text-slate-950 font-bold rounded-lg text-sm hover:bg-orange-400 transition shadow-md shadow-orange-500/10 cursor-pointer">
+          Get Started
+        </button>
+      </Link>
+    </>
+  )}
 </div>
 
 </div>

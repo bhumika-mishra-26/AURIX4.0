@@ -28,6 +28,7 @@ import {
   AlertTriangle,
   Filter
 } from "lucide-react"
+import Navbar from "@/components/navbar"
 
 interface ExtendedFinding extends Vulnerability {
   tool?: string
@@ -95,6 +96,19 @@ function ResultsContent() {
     const rawSev = (d.severity || "High") as string
     const severity = (rawSev.charAt(0).toUpperCase() + rawSev.slice(1).toLowerCase()) as Vulnerability["severity"]
 
+    const decodeB64 = (str?: string | null) => {
+      if (!str) return ""
+      const trimmed = str.trim()
+      if (trimmed.includes(" ") || trimmed.includes("\n") || trimmed.includes("//") || trimmed.includes("#")) return str
+      if (/^[A-Za-z0-9+/=]+$/.test(trimmed) && trimmed.length >= 8 && trimmed.length % 4 === 0) {
+        try {
+          const decoded = typeof window !== "undefined" ? atob(trimmed) : Buffer.from(trimmed, "base64").toString("utf-8")
+          if (decoded && decoded.trim().length > 0) return decoded
+        } catch {}
+      }
+      return str
+    }
+
     return {
       id: d.id || `finding-${idx}`,
       file: d.file_path || "src/app.js",
@@ -104,9 +118,9 @@ function ResultsContent() {
       cvss: typeof d.cvss === "number" ? d.cvss : 7.5,
       status: mappedStatus,
       codeLine: d.line_number || 1,
-      vulnCode: d.evidence || "// Code flag identified by scanner",
-      pocScript: d.poc_script || "# Red Agent PoC Exploit Script not generated for this vector",
-      patchCode: d.patch_code || "# Blue Agent Remediation Patch pending wargaming verification",
+      vulnCode: decodeB64(d.evidence || "// Code flag identified by scanner"),
+      pocScript: decodeB64(d.poc_script || "# Red Agent PoC Exploit Script not generated for this vector"),
+      patchCode: decodeB64(d.patch_code || "# Blue Agent Remediation Patch pending wargaming verification"),
       aiReasoning: d.ai_reasoning || "Static analysis identified potential tainted data flow. Sandbox wargaming verification recorded.",
       tool: d.tool || "AURIX AI Engine",
       ruleId: d.rule_id || "AURIX-SEC-VULN",
@@ -256,8 +270,11 @@ function ResultsContent() {
   const resolvedCount = findings.filter(f => f.status === "resolved").length
 
   return (
-    <main className="min-h-screen p-4 md:p-8 bg-slate-950 text-slate-100 font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
+      <Navbar showTutorButton={false} />
+
+      <main className="flex-1 p-4 md:p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header Bar */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-slate-800">
@@ -691,7 +708,8 @@ function ResultsContent() {
           router.push(`/dashboard${scanId ? `?scan_id=${scanId}` : ""}`)
         }}
       />
-    </main>
+      </main>
+    </div>
   )
 }
 

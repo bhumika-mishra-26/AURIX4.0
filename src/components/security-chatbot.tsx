@@ -239,7 +239,7 @@ export default function SecurityChatbot({ selectedVuln, isOpen, onClose, allVuln
       console.warn("AURIX Tutor API call error:", err)
     }
 
-    // Conversational fallback response generator when offline / LLM unavailable
+    // Conversational fallback — responds to what the user actually asked
     let reply = ""
     const query = promptText.toLowerCase()
 
@@ -247,29 +247,93 @@ export default function SecurityChatbot({ selectedVuln, isOpen, onClose, allVuln
       if (query.includes("poc") || query.includes("exploit")) {
         reply = `Hey! Taking a look at the Proof-of-Concept for **${selectedVuln.vuln}**:\n\n` +
           `AURIX's Red Agent generated a **masked wargaming PoC** for line **${selectedVuln.codeLine}** in \`${selectedVuln.file}\`. ` +
-          `To protect user systems, this script is safely masked to verify internally that the vulnerability exists and that our fix holds up under wargame testing.\n\n` +
-          `Would you like me to explain how attackers usually trigger this issue, or should we review the patch diff together?`
-      } else if (query.includes("patch") || query.includes("fix") || query.includes("remediat")) {
-        reply = `Here is how the Blue Agent patch resolves **${selectedVuln.vuln}**:\n\n` +
+          `To protect user systems, this script is safely masked to verify internally that the vulnerability exists and that our fix holds up.\n\n` +
+          `Would you like me to explain how attackers trigger this, or review the patch diff together?`
+      } else if (query.includes("patch") || query.includes("fix") || query.includes("remediat") || query.includes("how")) {
+        reply = `Here's how the Blue Agent patch resolves **${selectedVuln.vuln}**:\n\n` +
           `The remediation replaces unsafe execution logic with secure parameterization and strict input validation. ` +
-          `Our internal wargame simulation confirmed that the exploit is 100% neutralized.\n\n` +
-          `💡 **Quick Tip**: You can click **"Implement PR Fix"** in the details view to open an automated Pull Request right now!`
+          `Our internal wargame simulation confirmed the exploit is 100% neutralized.\n\n` +
+          (selectedVuln.patchCode ? `**Patch:**\n\`\`\`\n${selectedVuln.patchCode}\n\`\`\`\n\n` : "") +
+          `💡 Click **"Implement PR Fix"** in the details view to open an automated Pull Request right now!`
+      } else if (query.includes("what") || query.includes("explain") || query.includes("tell") || query.includes("describe")) {
+        reply = `**${selectedVuln.vuln}** is a **${selectedVuln.severity}** severity issue (CVSS ${selectedVuln.cvss || "N/A"}) in the **${selectedVuln.layer}** layer.\n\n` +
+          `📍 **Location:** \`${selectedVuln.file}\`, line **${selectedVuln.codeLine}**\n\n` +
+          (selectedVuln.vulnCode ? `**Vulnerable code:**\n\`\`\`\n${selectedVuln.vulnCode}\n\`\`\`\n\n` : "") +
+          `It arises when user-controlled input reaches an execution sink without validation, enabling arbitrary command injection.\n\n` +
+          `Want me to walk through the attack vector, the patch, or both?`
       } else {
-        reply = `Looking at **${selectedVuln.vuln}** (${selectedVuln.severity} severity, CVSS ${selectedVuln.cvss}):\n\n` +
-          `This issue is in \`${selectedVuln.file}\` at line **${selectedVuln.codeLine}**. It typically arises when user input is accepted without validation.\n\n` +
-          `Let me know what you'd like to inspect next — I can explain the attack vector, guide you through the code fix, or show you how to verify it!`
+        reply = `Looking at **${selectedVuln.vuln}** (${selectedVuln.severity} severity, CVSS ${selectedVuln.cvss || "N/A"}):\n\n` +
+          `📍 \`${selectedVuln.file}\` · line **${selectedVuln.codeLine}** · **${selectedVuln.layer}** layer.\n\n` +
+          `I can explain the attack vector, guide you through the code fix, or walk you through verifying the patch!`
       }
     } else if (allVulns && allVulns.length > 0) {
-      let tableMd = `| Vulnerability | Severity | Layer | File | Line |\n| --- | --- | --- | --- | --- |\n`
-      allVulns.forEach(v => {
-        const fileName = v.file.split("/").pop() || v.file
-        tableMd += `| **${v.vuln}** | **${v.severity}** | ${v.layer} | \`${fileName}\` | ${v.codeLine || 'N/A'} |\n`
-      })
+      // No card selected — route by intent, using scoped booleans to avoid keyword collisions
 
-      reply = `Here is your security overview for **${targetRepo || 'your repository'}**:\n\n` +
-        `We found **${allVulns.length}** verified security findings:\n\n` +
-        tableMd + `\n` +
-        `Click on any vulnerability card on the board and we can dive into the exact line of code together!`
+      const isAskingForFix =
+        query.includes("fix") || query.includes("patch") || query.includes("remediat") ||
+        (query.includes("how") && !query.includes("how does") && !query.includes("how do i explain"))
+
+      const isAskingForVulnList =
+        query.includes("vuln") || query.includes("found") || query.includes("scan") ||
+        query.includes("repo") || query.includes("list") || query.includes("show") ||
+        (query.includes("what") && (
+          query.includes("vuln") || query.includes("issue") ||
+          query.includes("problem") || query.includes("finding") || query.includes("in my")
+        ))
+
+      const isAskingToExplain =
+        query.includes("explain") || query.includes("describe") ||
+        query.includes("tell me") || query.includes("what is") ||
+        query.includes("what are") || query.includes("how does") || query.includes("how do")
+
+      const isAskingAboutExploit =
+        query.includes("exploit") || query.includes("poc") ||
+        query.includes("attack") || query.includes("hack")
+
+      const isGreeting =
+        query.includes("hello") || query === "hi" ||
+        query.includes("hi ") || query.includes("hey")
+
+      if (isAskingForFix) {
+        reply = `To fix the vulnerabilities AURIX found:\n\n` +
+          `1. **Click a vulnerability card** on the Kanban board to load its context.\n` +
+          `2. Review the **Blue Agent's patch** in the details panel.\n` +
+          `3. Click **"Implement PR Fix"** to auto-open a verified Pull Request on your GitHub repo.\n\n` +
+          `Each fix is wargame-tested to confirm the exploit is fully neutralized. Want me to walk through a specific one?`
+      } else if (isAskingForVulnList) {
+        let tableMd = `| Vulnerability | Severity | Layer | File | Line |\n| --- | --- | --- | --- | --- |\n`
+        allVulns.forEach(v => {
+          const fileName = v.file.split("/").pop() || v.file
+          tableMd += `| **${v.vuln}** | **${v.severity}** | ${v.layer} | \`${fileName}\` | ${v.codeLine || "N/A"} |\n`
+        })
+        reply = `Here is your security overview for **${targetRepo || "your repository"}**:\n\n` +
+          `We found **${allVulns.length}** verified security findings:\n\n` +
+          tableMd + `\nClick any vulnerability card and I'll dive into the exploit and fix with you!`
+      } else if (isAskingToExplain) {
+        reply = `Sure! To get a full explanation, **click any vulnerability card** on the Kanban board to load its context.\n\n` +
+          `I'll then walk you through:\n` +
+          `- 🔍 **What the flaw is** and why it's dangerous in production\n` +
+          `- 💥 **How the Red Agent PoC** demonstrates it in a safe sandboxed wargame\n` +
+          `- 🛡️ **How the Blue Agent patch** neutralizes it\n` +
+          `- 🚀 **How to ship the fix** via an automated GitHub Pull Request\n\n` +
+          `Or ask **"what vulnerabilities are in my repo?"** for a full findings overview!`
+      } else if (isAskingAboutExploit) {
+        reply = `Great question! **Exploits** are techniques attackers use to trigger a vulnerability and cause unauthorized behaviour.\n\n` +
+          `In AURIX, the **Red Agent** auto-generates a masked Proof-of-Concept (PoC) for each finding. It's sanitized for safety — it proves the flaw is real and verifies the Blue Agent patch neutralizes it, without exposing a live weaponized exploit chain.\n\n` +
+          `**Click any vulnerability card** on the board and I'll walk you through its specific exploit vector and patch!`
+      } else if (isGreeting) {
+        reply = `Hey! 👋 I'm **AURIX Tutor**, your DevSecOps AI pair-programmer.\n\n` +
+          `I can see your repo has **${allVulns.length}** security finding${allVulns.length !== 1 ? "s" : ""}. ` +
+          `Click any vulnerability card to load its context, and I'll walk you through the exploit and the fix!\n\n` +
+          `Or ask me anything — "what vulnerabilities are in my repo?", "how can I fix these?", etc.`
+      } else {
+        reply = `I'm **AURIX Tutor**, your DevSecOps AI assistant! Here's what I can do:\n\n` +
+          `- **"What vulnerabilities are in my repo?"** — Full findings overview\n` +
+          `- **"How can I fix these?"** — Step-by-step patch guidance\n` +
+          `- **"Explain exploit / poc"** — Learn about attack vectors\n` +
+          `- **Click a vulnerability card** — Deep-dive into exploit + fix\n\n` +
+          `What would you like to explore?`
+      }
     } else {
       reply = `Hey! I'm **AURIX Tutor**.\n\n` +
         `Whenever you select a vulnerability on the board, I'll load all its details so we can analyze the code, understand the threat, and review the automated fix together.\n\n` +

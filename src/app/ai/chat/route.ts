@@ -60,11 +60,13 @@ Key Guidelines:
 
 ${contextDescription}`;
 
-    // List of models to try in order of preference
+    // Groq production model IDs in order of preference
+    // See https://console.groq.com/docs/models for the full list
     const candidateModels = [
-      process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
-      'openai/gpt-oss-20b',
-      'qwen/qwen3.8-27b'
+      process.env.GROQ_MODEL || 'openai/gpt-oss-120b', // 500 t/s, $0.15/$0.60 per 1M
+      'openai/gpt-oss-20b',                             // 1000 t/s, $0.075/$0.30 per 1M
+      'llama-3.3-70b-versatile',                        // free-tier fallback
+      'llama-3.1-8b-instant',                           // free-tier fallback
     ];
 
     if (groqApiKey && groqApiKey !== 'your_groq_api_key') {
@@ -100,7 +102,7 @@ ${contextDescription}`;
       }
     }
 
-    // Conversational fallback assistant if network / API is temporarily unavailable
+    // Conversational fallback assistant — responds to the actual question asked
     const lastUserMsg = conversation[conversation.length - 1]?.content?.toLowerCase() || '';
     let fallbackReply = '';
 
@@ -110,21 +112,116 @@ ${contextDescription}`;
           `AURIX's Red Agent generated a **masked wargaming PoC** targeting line **${selectedVuln.codeLine}** in \`${selectedVuln.file}\`. ` +
           `Because we prioritize safety, this script is sanitized and masked — its primary purpose is to mathematically verify in our isolated sandbox that the vulnerability is exploitable and that the patch completely neutralizes it.\n\n` +
           `Would you like me to explain how an attacker might craft payloads against this line, or shall we inspect the Blue Agent's patch fix?`;
-      } else if (lastUserMsg.includes('patch') || lastUserMsg.includes('fix') || lastUserMsg.includes('remediat')) {
-        fallbackReply = `Here is how we can fix **${selectedVuln.vuln}** in \`${selectedVuln.file}\`:\n\n` +
-          `The Blue Agent has synthesized a surgical patch that replaces unsafe dynamic execution with safe parameterization and input sanitization. ` +
-          `Our dual-agent wargaming loop already verified that the exploit is 100% neutralized after applying this change.\n\n` +
-          `💡 **Next step**: You can click the **"Implement PR Fix"** button in the Vulnerability Details modal to automatically open a verified Pull Request directly on your GitHub repository!`;
+      } else if (lastUserMsg.includes('patch') || lastUserMsg.includes('fix') || lastUserMsg.includes('remediat') || lastUserMsg.includes('how')) {
+        fallbackReply = `Here is how we fix **${selectedVuln.vuln}** in \`${selectedVuln.file}\`:\n\n` +
+          `The Blue Agent synthesized a surgical patch that replaces unsafe dynamic execution with secure parameterization and strict input validation. ` +
+          `Our dual-agent wargaming loop already verified the exploit is 100% neutralized.\n\n` +
+          (selectedVuln.patchCode ? `**Suggested patch:**\n\`\`\`\n${selectedVuln.patchCode}\n\`\`\`\n\n` : '') +
+          `💡 Click **"Implement PR Fix"** in the details panel to auto-open a verified Pull Request on your GitHub repo!`;
+      } else if (lastUserMsg.includes('what') || lastUserMsg.includes('explain') || lastUserMsg.includes('tell') || lastUserMsg.includes('describe')) {
+        fallbackReply = `**${selectedVuln.vuln}** is a **${selectedVuln.severity}** severity finding (CVSS ${selectedVuln.cvss || 'N/A'}) in the **${selectedVuln.layer}** layer.\n\n` +
+          `📍 **Location:** \`${selectedVuln.file}\`, line **${selectedVuln.codeLine}**\n\n` +
+          (selectedVuln.vulnCode ? `**Vulnerable code:**\n\`\`\`\n${selectedVuln.vulnCode}\n\`\`\`\n\n` : '') +
+          `This flaw typically arises when user-controlled input reaches a sensitive execution sink without proper validation or parameter binding, enabling an attacker to run arbitrary commands.\n\n` +
+          `Want me to walk through the attack vector, the Blue Agent patch, or both?`;
       } else {
-        fallbackReply = `Looking at **${selectedVuln.vuln}** (${selectedVuln.severity} severity, CVSS ${selectedVuln.cvss}):\n\n` +
-          `This issue is located in \`${selectedVuln.file}\` at line **${selectedVuln.codeLine}** within the **${selectedVuln.layer}** layer. ` +
-          `It typically happens when user-controlled inputs reach sensitive execution sinks without proper validation or parameter binding.\n\n` +
-          `How can I help you tackle this? I can walk through the attack vector, break down the code patch, or help you test the fix!`;
+        fallbackReply = `Looking at **${selectedVuln.vuln}** (${selectedVuln.severity} severity, CVSS ${selectedVuln.cvss || 'N/A'}):\n\n` +
+          `📍 \`${selectedVuln.file}\` · line **${selectedVuln.codeLine}** · **${selectedVuln.layer}** layer.\n\n` +
+          `How can I help? I can explain the attack vector, break down the patch diff, or walk you through testing the fix!`;
       }
     } else {
-      fallbackReply = `Hey! 👋 I'm **AURIX Tutor**, your AI security assistant.\n\n` +
-        `I'm here to help you understand vulnerabilities found across your repository, walk through exploit vectors, and explain how the automated patches keep your codebase safe.\n\n` +
-        `Click on any vulnerability in the Kanban board or ask me any question about application security to get started!`;
+      // No vuln selected — respond contextually based on what was actually asked.
+      // IMPORTANT: Check more specific conditions FIRST to avoid broad keyword collisions.
+      // e.g. "what" alone is too broad — pair it with vuln-specific words.
+
+      const isAskingForVulnList =
+        lastUserMsg.includes('vuln') ||
+        lastUserMsg.includes('found') ||
+        lastUserMsg.includes('scan') ||
+        lastUserMsg.includes('repo') ||
+        lastUserMsg.includes('list') ||
+        lastUserMsg.includes('show') ||
+        (lastUserMsg.includes('what') && (
+          lastUserMsg.includes('vuln') ||
+          lastUserMsg.includes('issue') ||
+          lastUserMsg.includes('problem') ||
+          lastUserMsg.includes('finding') ||
+          lastUserMsg.includes('in my')
+        ));
+
+      const isAskingForFix =
+        lastUserMsg.includes('fix') ||
+        lastUserMsg.includes('patch') ||
+        lastUserMsg.includes('remediat') ||
+        (lastUserMsg.includes('how') && !lastUserMsg.includes('how does') && !lastUserMsg.includes('how do i explain'));
+
+      const isAskingToExplain =
+        lastUserMsg.includes('explain') ||
+        lastUserMsg.includes('describe') ||
+        lastUserMsg.includes('tell me') ||
+        lastUserMsg.includes('what is') ||
+        lastUserMsg.includes('what are') ||
+        lastUserMsg.includes('how does') ||
+        lastUserMsg.includes('how do');
+
+      const isAskingAboutExploit =
+        lastUserMsg.includes('exploit') ||
+        lastUserMsg.includes('poc') ||
+        lastUserMsg.includes('attack') ||
+        lastUserMsg.includes('hack');
+
+      const isGreeting =
+        lastUserMsg.includes('hello') ||
+        lastUserMsg.includes('hi ') ||
+        lastUserMsg === 'hi' ||
+        lastUserMsg.includes('hey');
+
+      if (isAskingForFix) {
+        fallbackReply = `Great question! To fix the vulnerabilities AURIX found:\n\n` +
+          `1. **Click a vulnerability card** on the Kanban board to load its full context.\n` +
+          `2. Open the **Vulnerability Details** panel and review the Blue Agent's suggested patch.\n` +
+          `3. Click **"Implement PR Fix"** to automatically open a verified Pull Request on your GitHub repo.\n\n` +
+          `Each fix has been wargame-tested by the Red/Blue agent loop to confirm the exploit is fully neutralized. Want me to explain any specific vulnerability fix in detail?`;
+      } else if (isAskingForVulnList) {
+        const { allVulns: vulnList } = await req.clone().json().catch(() => ({ allVulns: [] }));
+        if (Array.isArray(vulnList) && vulnList.length > 0) {
+          let tableMd = `| Vulnerability | Severity | Layer | File | Line |\n| --- | --- | --- | --- | --- |\n`;
+          vulnList.forEach((v: any) => {
+            const fileName = (v.file || '').split('/').pop() || v.file;
+            tableMd += `| **${v.vuln}** | ${v.severity} | ${v.layer} | \`${fileName}\` | ${v.codeLine || 'N/A'} |\n`;
+          });
+          fallbackReply = `Here is your security overview:\n\nWe found **${vulnList.length}** verified findings:\n\n${tableMd}\nClick any vulnerability card on the board and I'll dive into the exploit and fix with you!`;
+        } else {
+          fallbackReply = `No vulnerability data is loaded yet. Run a scan from your Dashboard, then come back and I can walk through every finding with you!`;
+        }
+      } else if (isAskingToExplain) {
+        fallbackReply = `Sure! To get a full explanation of a specific vulnerability, **click any card on the Kanban board** to load its context.\n\n` +
+          `I'll then walk you through:\n` +
+          `- 🔍 **What the flaw is** and why it's dangerous\n` +
+          `- 💥 **How the Red Agent PoC** demonstrates it in a safe, sandboxed wargame\n` +
+          `- 🛡️ **How the Blue Agent patch** neutralizes it\n` +
+          `- 🚀 **How to ship the fix** via an automated GitHub Pull Request\n\n` +
+          `Or ask me **"what vulnerabilities are in my repo?"** for a full findings overview!`;
+      } else if (isAskingAboutExploit) {
+        fallbackReply = `Great security question! **Exploits** are techniques attackers use to trigger a vulnerability and cause unauthorized behaviour.\n\n` +
+          `In AURIX, the **Red Agent** auto-generates a masked Proof-of-Concept (PoC) for each finding. The PoC is sanitized for safety — it proves the flaw is real and verifies the Blue Agent patch neutralizes it, without exposing a live weaponized exploit chain.\n\n` +
+          `**Click any vulnerability card** on the Kanban board and I'll walk you through its specific exploit vector and the corresponding patch!`;
+      } else if (isGreeting) {
+        fallbackReply = `Hey! 👋 Great to see you! I'm **AURIX Tutor**, your DevSecOps AI pair-programmer.\n\n` +
+          `I can help you:\n` +
+          `- **Understand** each vulnerability in your repo\n` +
+          `- **Analyze** the Red Agent exploit proof-of-concept\n` +
+          `- **Review** the Blue Agent's automated patch\n` +
+          `- **Guide** you to implement fixes via GitHub Pull Request\n\n` +
+          `Click any vulnerability card on the Kanban board to get started, or just ask me anything!`;
+      } else {
+        fallbackReply = `I'm **AURIX Tutor**, your AI DevSecOps assistant! Here's what I can help with:\n\n` +
+          `- **"What vulnerabilities are in my repo?"** — Full findings overview\n` +
+          `- **"How can I fix these?"** — Step-by-step remediation guide\n` +
+          `- **"Explain exploit / poc"** — Learn about attack vectors\n` +
+          `- **Click a vulnerability card** — Deep-dive into a specific exploit + fix\n\n` +
+          `What would you like to explore?`;
+      }
     }
 
     return NextResponse.json({ reply: fallbackReply, source: 'conversational-fallback' });
