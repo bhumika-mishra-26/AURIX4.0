@@ -239,16 +239,6 @@ docker compose up --build
 
 ---
 
-## 📂 Repository Structure
-
-```
-aurix/
-├── backend/           # Node.js · Express · Auth · DB · Redis Queue · RAG API
-├── ai-engine/          # LangGraph orchestrator · Agents · Sandbox · Scanners
-├── frontend/            # Next.js dashboard · Triage board · AI chat
-├── vscode-extension/     # IDE integration · Secret Guard · Ghost-Text patches
-├── docker-compose.yml
-└── .env.example
 ```
 
 ---
