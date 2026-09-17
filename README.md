@@ -18,7 +18,7 @@
 
 ## 📖 Contents
 
-[What is AURIX](#-what-is-aurix) • [Project Description](#-project-description) • [Modules at a Glance](#-modules-at-a-glance) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [How a Scan Works](#-how-a-scan-works) • [Repo Structure](#-repository-structure) • [Roadmap](#-roadmap)
+[What is AURIX](#-what-is-aurix) • [Project Description](#-project-description) • [Modules at a Glance](#-modules-at-a-glance) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [How a Scan Works](#-how-a-scan-works)
 
 ---
 
@@ -236,15 +236,6 @@ docker compose up --build
 | **7** | Failed PoCs trigger a **Reflexion** retry for self-correction |
 | **8** | Exploits neutralized by the patch are marked **✅ Verified** |
 | **9** | Results ship via webhook to the dashboard/IDE, with a one-click **GitHub PR** |
-
----
-
-
-```
-
----
-
-
 
 <div align="center">
 
