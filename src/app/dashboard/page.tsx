@@ -185,7 +185,13 @@ function DashboardContent() {
         codeLine: d.line_number || 1,
         vulnCode: decodeB64(d.evidence || "// Code flag identified by scanner"),
         pocScript: decodeB64(d.poc_script || "# Red Agent PoC Exploit Script"),
-        patchCode: decodeB64(d.patch_code || "# Blue Agent Remediation Patch")
+        patchCode: decodeB64(d.patch_code || "# Blue Agent Remediation Patch"),
+        aiReasoning: decodeB64(d.ai_reasoning || d.aiReasoning || ""),
+        projectId: d.project_id || (d.scans ? d.scans.project_id : undefined),
+        scanId: d.scan_id || scanId,
+        ruleId: d.rule_id || d.title || "",
+        description: d.description || "",
+        evidence: d.evidence || ""
       }
     }
 
@@ -752,6 +758,7 @@ function DashboardContent() {
         <VulnerabilityDetail 
           vuln={selectedVuln} 
           initialTab={detailInitialTab}
+          projectId={selectedVuln?.projectId || searchParams?.get("project_id") || (typeof window !== "undefined" ? localStorage.getItem("aurix_project_id") || "" : "")}
           onClose={() => setSelectedVuln(null)} 
           onApplyFix={handleApplyFix}
           repoUrl={activeRepoName || (typeof window !== "undefined" ? localStorage.getItem("aurix_repo_url") || localStorage.getItem("aurix_scanned_repo") || "" : "")}

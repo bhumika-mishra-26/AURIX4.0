@@ -157,6 +157,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await authService.login(email, password)
     if (res.token) setToken(res.token)
     if (res.user) setUser(res.user)
+    // Clear any stale GitHub tokens from a previous GitHub session so they
+    // don't bleed into this email/password user's session.
+    if (typeof window !== "undefined" && res.user?.app_metadata?.provider !== "github") {
+      localStorage.removeItem("aurix_github_token")
+      localStorage.removeItem("aurix_github_connected")
+    }
     return res
   }
 
@@ -164,6 +170,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await authService.signup(name, email, password)
     if (res.token) setToken(res.token)
     if (res.user) setUser(res.user)
+    // New email/password signup — clear any stale GitHub tokens.
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("aurix_github_token")
+      localStorage.removeItem("aurix_github_connected")
+    }
     return res
   }
 

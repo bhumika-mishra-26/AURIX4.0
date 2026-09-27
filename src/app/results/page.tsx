@@ -121,14 +121,17 @@ function ResultsContent() {
       vulnCode: decodeB64(d.evidence || "// Code flag identified by scanner"),
       pocScript: decodeB64(d.poc_script || "# Red Agent PoC Exploit Script not generated for this vector"),
       patchCode: decodeB64(d.patch_code || "# Blue Agent Remediation Patch pending wargaming verification"),
-      aiReasoning: d.ai_reasoning || "Static analysis identified potential tainted data flow. Sandbox wargaming verification recorded.",
+      aiReasoning: decodeB64(d.ai_reasoning || d.aiReasoning || "Static analysis identified potential tainted data flow. Sandbox wargaming verification recorded."),
+      projectId: d.project_id || (d.scans ? d.scans.project_id : undefined),
+      scanId: d.scan_id || scanId,
       tool: d.tool || "AURIX AI Engine",
       ruleId: d.rule_id || "AURIX-SEC-VULN",
       category: d.category || "SAST",
       verified: Boolean(d.verified),
       fix: d.fix || "Consult secure coding documentation",
       description: d.description || "",
-      wargameStatus: d.wargame_status || "Verified"
+      wargameStatus: d.wargame_status || "Verified",
+      evidence: d.evidence || ""
     }
   }
 
@@ -699,6 +702,7 @@ function ResultsContent() {
       <VulnerabilityDetail
         vuln={selectedVuln}
         initialTab={modalInitialTab}
+        projectId={selectedVuln?.projectId || searchParams?.get("project_id") || (typeof window !== "undefined" ? localStorage.getItem("aurix_project_id") || "" : "")}
         onClose={() => setSelectedVuln(null)}
         onApplyFix={(id) => {
           setFindings(prev => prev.map(f => f.id === id ? { ...f, status: "resolved" } : f))

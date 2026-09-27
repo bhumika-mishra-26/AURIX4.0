@@ -44,8 +44,8 @@ export default function ScanPage() {
   const [repoUrl, setRepoUrl] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isScanning, setIsScanning] = useState(false)
-  const [showPreFlight, setShowPreFlight] = useState(false)
-  const [preFlightDone, setPreFlightDone] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
   const [isGitHubConnected, setIsGitHubConnected] = useState(false)
   const [isGitHubLoading, setIsGitHubLoading] = useState(false)
   const [selectedRepo, setSelectedRepo] = useState("")
@@ -77,12 +77,23 @@ export default function ScanPage() {
   }, [isLoading, isAuthenticated, user, router])
 
   useEffect(() => {
-    if (
+    // Only consider localStorage GitHub flags if the CURRENT user is actually a GitHub user.
+    // This prevents email/password users from inheriting a previous GitHub user's stale session.
+    const isGitHubUser =
       user?.app_metadata?.provider === "github" ||
-      user?.user_metadata?.user_name ||
-      (typeof window !== "undefined" && localStorage.getItem("aurix_github_connected") === "true")
-    ) {
+      !!user?.user_metadata?.user_name ||
+      !!user?.user_metadata?.preferred_username
+
+    if (isGitHubUser) {
       setIsGitHubConnected(true)
+    } else if (typeof window !== "undefined" && localStorage.getItem("aurix_github_connected") === "true") {
+      // localStorage says connected but current user is NOT a GitHub user.
+      // This is a stale flag from a previous session — clear it.
+      localStorage.removeItem("aurix_github_connected")
+      localStorage.removeItem("aurix_github_token")
+      setIsGitHubConnected(false)
+    } else {
+      setIsGitHubConnected(false)
     }
   }, [user])
 
@@ -98,38 +109,68 @@ export default function ScanPage() {
       setRepoFetchError("")
       try {
         const ghToken = typeof window !== "undefined" ? localStorage.getItem("aurix_github_token") : null
-        const authTok = typeof window !== "undefined" ? localStorage.getItem("aurix_token") : null
-        const username = user?.user_metadata?.user_name || user?.user_metadata?.preferred_username || user?.email?.split("@")[0] || ""
+        // Derive the current user's GitHub username from their session metadata
+        const currentUsername =
+          user?.user_metadata?.user_name ||
+          user?.user_metadata?.preferred_username ||
+          user?.identities?.find((i: any) => i.provider === "github")?.identity_data?.user_name ||
+          ""
 
-        // If authenticated ghToken is available, fetch user repos directly from GitHub API
+        // If a stored GitHub token exists, verify it actually belongs to the current user
+        // before using it. This prevents cross-user token contamination.
         if (ghToken) {
           try {
-            const authGhRes = await fetch("https://api.github.com/user/repos?sort=updated&per_page=50", {
+            const meRes = await fetch("https://api.github.com/user", {
               headers: {
                 Authorization: `Bearer ${ghToken}`,
                 Accept: "application/vnd.github.v3+json"
               }
             })
-            if (authGhRes.ok) {
-              const data = await authGhRes.json()
-              if (Array.isArray(data) && data.length > 0) {
-                setUserRepos(data.map((r: any) => ({
-                  id: r.id,
-                  name: r.name,
-                  full_name: r.full_name,
-                  private: r.private
-                })))
+            if (meRes.ok) {
+              const meData = await meRes.json()
+              const tokenOwner: string = meData.login || ""
+
+              // If token owner doesn't match current user, discard stale token
+              if (currentUsername && tokenOwner.toLowerCase() !== currentUsername.toLowerCase()) {
+                console.warn(`[AURIX] Stale GitHub token belongs to '${tokenOwner}', not '${currentUsername}'. Clearing.`)
+                localStorage.removeItem("aurix_github_token")
+                localStorage.removeItem("aurix_github_connected")
+                setIsGitHubConnected(false)
+                setUserRepos([])
                 return
               }
+
+              // Token is valid and belongs to this user — fetch their repos
+              const reposRes = await fetch("https://api.github.com/user/repos?sort=updated&per_page=50", {
+                headers: {
+                  Authorization: `Bearer ${ghToken}`,
+                  Accept: "application/vnd.github.v3+json"
+                }
+              })
+              if (reposRes.ok) {
+                const data = await reposRes.json()
+                if (Array.isArray(data) && data.length > 0) {
+                  setUserRepos(data.map((r: any) => ({
+                    id: r.id,
+                    name: r.name,
+                    full_name: r.full_name,
+                    private: r.private
+                  })))
+                  return
+                }
+              }
+            } else if (meRes.status === 401) {
+              // Token is expired/revoked — clean up
+              localStorage.removeItem("aurix_github_token")
             }
           } catch (ghErr) {
-            console.warn("Direct GitHub token repos fetch notice:", ghErr)
+            console.warn("GitHub token validation notice:", ghErr)
           }
         }
 
-        // Direct fallback to GitHub API if public username is available
-        if (username && username !== "aurix-auditor" && username !== "aurix-sandbox") {
-          const directGhRes = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=50`)
+        // Fallback: fetch public repos by GitHub username
+        if (currentUsername && currentUsername !== "aurix-auditor" && currentUsername !== "aurix-sandbox") {
+          const directGhRes = await fetch(`https://api.github.com/users/${encodeURIComponent(currentUsername)}/repos?sort=updated&per_page=50`)
           if (directGhRes.ok) {
             const data = await directGhRes.json()
             if (Array.isArray(data) && data.length > 0) {
@@ -289,16 +330,15 @@ export default function ScanPage() {
     if (activeTab === "zip" && !selectedFile) return
     if (activeTab === "github" && !selectedRepo) return
 
-    // Show Pre-flight guard UI immediately
-    setShowPreFlight(true)
-    setPreFlightDone(false)
+    // Show submission loader immediately
+    setIsSubmitting(true)
+    setSubmitSuccess(false)
     setIsScanComplete(false)
     setRealProgressPct(5)
     setTotalFindingsFound(0)
     setRealTimeLogs(["[INIT] Initializing AURIX Security Analysis Gate..."])
 
     let activeScanId: string | null = null
-
     let queueError: string | null = null
 
     try {
@@ -343,21 +383,20 @@ export default function ScanPage() {
       queueError = err?.message || "Failed to initiate scan"
     }
 
-    // Only proceed to scanning UI if we got a valid scan ID from the backend
+    // If no scan ID, show error in logs and stop loader
     if (!activeScanId) {
-      setShowPreFlight(false)
+      setIsSubmitting(false)
       setRealTimeLogs(prev => [...prev, `[ERROR] ${queueError || "Failed to initiate scan. Check backend connection."}`])
       return
     }
 
-    // Pre-flight animation complete → transition to live scanning view
+    // Briefly show success state then transition to scanning view
+    setSubmitSuccess(true)
     setTimeout(() => {
-      setPreFlightDone(true)
-      setTimeout(() => {
-        setShowPreFlight(false)
-        setIsScanning(true)
-      }, 1000)
-    }, 1500)
+      setIsSubmitting(false)
+      setSubmitSuccess(false)
+      setIsScanning(true)
+    }, 900)
   }
 
   const getStepIcon = (status: string, idx: number) => {
@@ -478,42 +517,44 @@ export default function ScanPage() {
             </div>
           </div>
 
-        {/* PRE-FLIGHT SECRET GUARD MODAL */}
-        {showPreFlight && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl text-center space-y-6">
-              <div className="relative mx-auto w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center border border-orange-500/25">
-                <Sparkles className="text-orange-500 animate-pulse" size={32} />
+        {/* SUBMISSION LOADER OVERLAY */}
+        {isSubmitting && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center space-y-5">
+              {/* Icon */}
+              <div className="relative mx-auto w-16 h-16 flex items-center justify-center">
+                {submitSuccess ? (
+                  <>
+                    <div className="absolute inset-0 rounded-full bg-green-500/15 border border-green-500/30" />
+                    <CheckCircle2 className="text-green-400" size={34} />
+                  </>
+                ) : (
+                  <>
+                    <div className="absolute inset-0 rounded-full bg-orange-500/10 border border-orange-500/20 animate-pulse" />
+                    <div className="w-9 h-9 border-[3px] border-orange-500 border-t-transparent rounded-full animate-spin" />
+                  </>
+                )}
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-white mb-2">Running Pre-Flight Secret Guard</h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-mono">
-                  Scanning workspace for API credentials, tokens, or private keys before transmission.
+
+              {/* Text */}
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-white">
+                  {submitSuccess ? "Scan Queued Successfully" : "Submitting Repository..."}
+                </h3>
+                <p className="text-[11px] text-slate-400 font-mono leading-relaxed">
+                  {submitSuccess
+                    ? "AURIX pipeline is initializing. Redirecting to live scan view."
+                    : `Sending ${activeTab === "zip" ? selectedFile?.name : (repoUrl || selectedRepo)} to AURIX engine.`
+                  }
                 </p>
               </div>
-              <div className="space-y-2 bg-slate-950/60 p-4 rounded-xl border border-slate-850 text-left text-xs font-mono text-slate-400">
-                <div className="flex justify-between">
-                  <span>Searching env / config vars...</span>
-                  <span className={preFlightDone ? "text-green-500 font-semibold" : "text-orange-500"}>
-                    {preFlightDone ? "✔ OK" : "Scanning..."}
-                  </span>
+
+              {/* Progress bar */}
+              {!submitSuccess && (
+                <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full w-1/2 bg-gradient-to-r from-orange-600 via-orange-400 to-orange-600 rounded-full animate-[loading_1.2s_ease-in-out_infinite]" />
                 </div>
-                <div className="flex justify-between">
-                  <span>Checking AWS/GCP key formats...</span>
-                  <span className={preFlightDone ? "text-green-500 font-semibold" : "text-orange-500"}>
-                    {preFlightDone ? "✔ SAFE" : "Scanning..."}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Respecting .gitignore rules...</span>
-                  <span className={preFlightDone ? "text-green-500 font-semibold" : "text-orange-500"}>
-                    {preFlightDone ? "✔ COMPLIANT" : "Evaluating..."}
-                  </span>
-                </div>
-              </div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono">
-                {preFlightDone ? "Pre-flight check completed!" : "Mounting target workspace..."}
-              </p>
+              )}
             </div>
           </div>
         )}
@@ -709,19 +750,19 @@ export default function ScanPage() {
               {activeTab === "url" && (
                 <div className="space-y-2">
                   <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">
-                    Git Repository URL or Live Web Application Target
+                    Git Repository URL
                   </label>
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="https://github.com/owner/repo or https://mywebsite.com"
+                      placeholder="https://github.com/owner/repo"
                       value={repoUrl}
                       onChange={(e) => setRepoUrl(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 focus:border-orange-500 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 outline-none transition font-mono"
                     />
                   </div>
                   <p className="text-[10px] text-slate-500 font-mono">
-                    Supported: GitHub, GitLab, Bitbucket repositories, or Live Web Application URLs (DAST).
+                    Supported: GitHub, GitLab, and Bitbucket repositories.
                   </p>
                 </div>
               )}
