@@ -33,7 +33,7 @@ export default function StarBorder<T extends React.ElementType = "div">({
         "relative block overflow-hidden rounded-2xl p-[2px] transition-all duration-300 group cursor-pointer select-none",
         isActive
           ? "ring-2 ring-orange-500 shadow-[0_0_35px_rgba(249,115,22,0.45)] scale-[1.02]"
-          : "border border-slate-850 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1.5",
+          : "border border-slate-200 dark:border-slate-850 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1.5",
         className
       )}
       {...rest}
@@ -68,10 +68,10 @@ export default function StarBorder<T extends React.ElementType = "div">({
 
       {/* Inner Mask Content Container */}
       <div className={cn(
-        "relative z-10 w-full h-full rounded-[calc(1rem-2px)] backdrop-blur-md transition-colors duration-300",
+        "relative z-10 w-full h-full rounded-[calc(1rem-2px)] backdrop-blur-md transition-colors duration-300 shadow-sm",
         isActive
-          ? "bg-slate-900/95 dark:bg-slate-950/95"
-          : "bg-slate-900/80 dark:bg-slate-950/80 group-hover:bg-slate-900/95"
+          ? "bg-white/95 dark:bg-slate-950/95"
+          : "bg-white/90 dark:bg-slate-950/80 group-hover:bg-white dark:group-hover:bg-slate-900/95"
       )}>
         {children}
       </div>

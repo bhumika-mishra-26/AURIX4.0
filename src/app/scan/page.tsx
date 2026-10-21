@@ -414,10 +414,10 @@ export default function ScanPage() {
     }
   }
 
-  // If auth is resolving, display dark loader
+  // If auth is resolving, display loader
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 font-mono gap-3">
+      <main className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 font-mono gap-3">
         <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
         <p className="text-xs">Authenticating AURIX session...</p>
       </main>
@@ -433,7 +433,7 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col transition-colors duration-200">
       {/* Universal Nav Header */}
       <Navbar showTutorButton={false} />
 
@@ -449,7 +449,7 @@ export default function ScanPage() {
           <div className="flex items-center justify-between pb-2">
             <button
               onClick={() => router.push("/dashboard")}
-              className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition font-mono group cursor-pointer"
+              className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition font-mono group cursor-pointer"
             >
               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
               <span>← Back to Security Dashboard</span>
@@ -457,7 +457,7 @@ export default function ScanPage() {
 
             <button
               onClick={() => router.push("/history")}
-              className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-orange-400 transition font-mono cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-orange-500 dark:text-slate-400 dark:hover:text-orange-400 transition font-mono cursor-pointer"
             >
               <History size={13} />
               <span>Past Scan History →</span>
@@ -465,19 +465,19 @@ export default function ScanPage() {
           </div>
 
           {/* Header */}
-          <div className="border-b border-slate-900 pb-6">
+          <div className="border-b border-slate-200 dark:border-slate-900 pb-6">
             <div className="flex items-center gap-2.5 mb-1.5">
               <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500">
                 <ShieldAlert size={22} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                   AURIX Scanner Gate
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     Engine Ready
                   </span>
                 </h1>
-                <p className="text-xs text-slate-400 font-mono">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                   Initiate autonomous vulnerability assessment and Red/Blue agentic wargaming.
                 </p>
               </div>
@@ -485,32 +485,32 @@ export default function ScanPage() {
 
             {/* Quick Context Guidance Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
-              <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+              <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 shadow-sm space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
                   <Terminal size={14} className="text-orange-500" />
                   <span>Dual Ingestion</span>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   Analyze public or private GitHub repos via git clone, or drag-and-drop a local ZIP codebase.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                  <Lock size={14} className="text-blue-400" />
+              <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 shadow-sm space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <Lock size={14} className="text-blue-500 dark:text-blue-400" />
                   <span>Pre-Flight Guard</span>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   Automatic secret sanitization redacts .env keys, AWS credentials, and respects .gitignore rules.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                  <Sparkles size={14} className="text-amber-400" />
+              <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 shadow-sm space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <Sparkles size={14} className="text-amber-500 dark:text-amber-400" />
                   <span>Agentic PoC & Patch</span>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   Red Agent synthesizes exploit PoCs while Blue Agent writes verified drop-in code fixes.
                 </p>
               </div>
@@ -561,24 +561,24 @@ export default function ScanPage() {
 
         {/* REAL-TIME SCANNING PROGRESS CONTAINER */}
         {isScanning ? (
-          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl space-y-8">
-            <div className="flex justify-between items-center border-b border-slate-800/80 pb-6">
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-md dark:shadow-xl space-y-8">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800/80 pb-6">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <div className={`w-2.5 h-2.5 rounded-full ${isScanComplete ? "bg-green-500" : "bg-orange-500 animate-ping"}`} />
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                     {isScanComplete ? "Agentic Analysis Complete" : "Active Agentic Analysis"}
                   </h3>
                 </div>
-                <p className="text-xs text-slate-400 font-mono">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                   Scan ID: {pendingScanId || "scan_active"} // Target: {repoUrl || selectedRepo || selectedFile?.name || "Target Workspace"}
                 </p>
               </div>
               
               {/* Progress Completion Badge & Findings Counter */}
               <div className="flex items-center gap-4">
-                <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-center">
-                  <div className="text-lg font-black text-amber-400 font-mono">{totalFindingsFound}</div>
+                <div className="bg-slate-100 dark:bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                  <div className="text-lg font-black text-amber-500 dark:text-amber-400 font-mono">{totalFindingsFound}</div>
                   <div className="text-[9px] text-slate-500 uppercase font-mono">Vulnerabilities</div>
                 </div>
                 <div className="text-right">
@@ -606,16 +606,16 @@ export default function ScanPage() {
                     <div className="pt-0.5">{getStepIcon(step.status, index)}</div>
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-semibold tracking-wide ${isActive ? "text-orange-400" : "text-white"}`}>
+                        <span className={`text-sm font-semibold tracking-wide ${isActive ? "text-orange-500 dark:text-orange-400" : "text-slate-800 dark:text-white"}`}>
                           {step.label}
                         </span>
                         {isActive && (
-                          <span className="text-[9px] uppercase font-mono bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-full animate-pulse">
+                          <span className="text-[9px] uppercase font-mono bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-full animate-pulse">
                             Active
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400 leading-relaxed font-mono">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-mono">
                         {step.desc}
                       </p>
                     </div>
@@ -669,14 +669,14 @@ export default function ScanPage() {
             </div>
 
             {/* Bottom Actions */}
-            <div className="border-t border-slate-800/80 pt-6 flex justify-between items-center">
+            <div className="border-t border-slate-200 dark:border-slate-800/80 pt-6 flex justify-between items-center">
               <div>
                 {isScanComplete ? (
-                  <span className="text-xs font-mono text-green-400 flex items-center gap-1.5">
+                  <span className="text-xs font-mono text-green-600 dark:text-green-400 flex items-center gap-1.5">
                     <CheckCircle2 size={14} /> Scan Completed! Discovered {totalFindingsFound} verified findings.
                   </span>
                 ) : (
-                  <span className="text-xs font-mono text-orange-400 flex items-center gap-2">
+                  <span className="text-xs font-mono text-orange-600 dark:text-orange-400 flex items-center gap-2">
                     <RefreshCw size={12} className="animate-spin" />
                     Analyzing repository files in real-time...
                   </span>
@@ -693,7 +693,7 @@ export default function ScanPage() {
                   if (repoLabel) params.set("repo", repoLabel)
                   router.push(`/dashboard?${params.toString()}`)
                 }}
-                className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 disabled:from-slate-800 disabled:to-slate-800 text-slate-950 disabled:text-slate-500 font-bold rounded-lg transition duration-300 flex items-center gap-2 hover:scale-[1.01] cursor-pointer disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 disabled:from-slate-200 disabled:to-slate-200 dark:disabled:from-slate-800 dark:disabled:to-slate-800 text-white dark:text-slate-950 disabled:text-slate-400 dark:disabled:text-slate-500 font-bold rounded-lg transition duration-300 flex items-center gap-2 hover:scale-[1.01] cursor-pointer disabled:cursor-not-allowed shadow-sm"
               >
                 Reveal Risk Dashboard
                 <ChevronRight size={16} />
@@ -702,18 +702,18 @@ export default function ScanPage() {
           </div>
         ) : (
           /* CONFIGURATION TABS AND FORM */
-          <div className="max-w-2xl mx-auto bg-slate-900/35 border border-slate-800/80 rounded-2xl p-6 md:p-8 space-y-6">
-            <h2 className="text-lg font-bold text-white">Select Ingestion Source</h2>
+          <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900/35 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 space-y-6 shadow-sm">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Select Ingestion Source</h2>
             
             {/* Tab Selector */}
-            <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-850">
+            <div className="grid grid-cols-3 gap-2 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setActiveTab("url")}
                 className={`py-3 rounded-lg text-xs font-semibold flex flex-col items-center gap-1 transition ${
                   activeTab === "url" 
-                    ? "bg-slate-900 text-orange-500 shadow border border-slate-800" 
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-500 shadow border border-slate-200 dark:border-slate-800" 
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 <Link2 size={16} />
@@ -724,8 +724,8 @@ export default function ScanPage() {
                 onClick={() => setActiveTab("zip")}
                 className={`py-3 rounded-lg text-xs font-semibold flex flex-col items-center gap-1 transition ${
                   activeTab === "zip" 
-                    ? "bg-slate-900 text-orange-500 shadow border border-slate-800" 
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-500 shadow border border-slate-200 dark:border-slate-800" 
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 <Upload size={16} />
@@ -736,8 +736,8 @@ export default function ScanPage() {
                 onClick={() => setActiveTab("github")}
                 className={`py-3 rounded-lg text-xs font-semibold flex flex-col items-center gap-1 transition ${
                   activeTab === "github" 
-                    ? "bg-slate-900 text-orange-500 shadow border border-slate-800" 
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-500 shadow border border-slate-200 dark:border-slate-800" 
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 <Github size={16} />
@@ -749,7 +749,7 @@ export default function ScanPage() {
             <form onSubmit={handleStartScan} className="space-y-6">
               {activeTab === "url" && (
                 <div className="space-y-2">
-                  <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">
+                  <label className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
                     Git Repository URL
                   </label>
                   <div className="relative">
@@ -758,7 +758,7 @@ export default function ScanPage() {
                       placeholder="https://github.com/owner/repo"
                       value={repoUrl}
                       onChange={(e) => setRepoUrl(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-orange-500 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 outline-none transition font-mono"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-orange-500 rounded-xl px-4 py-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none transition font-mono"
                     />
                   </div>
                   <p className="text-[10px] text-slate-500 font-mono">
@@ -769,21 +769,21 @@ export default function ScanPage() {
 
               {activeTab === "zip" && (
                 <div className="space-y-2">
-                  <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">
+                  <label className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
                     Source Code Archive
                   </label>
-                  <div className="border border-dashed border-slate-800 hover:border-orange-500/50 rounded-xl p-8 text-center transition group bg-slate-950/40 relative">
+                  <div className="border border-dashed border-slate-300 dark:border-slate-800 hover:border-orange-500/50 rounded-xl p-8 text-center transition group bg-slate-50/50 dark:bg-slate-950/40 relative">
                     <input
                       type="file"
                       accept=".zip,.tar,.gz"
                       onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
-                    <FileArchive className="mx-auto text-slate-600 group-hover:text-orange-500 transition mb-3" size={36} />
-                    <p className="text-sm font-medium text-slate-300">
+                    <FileArchive className="mx-auto text-slate-400 dark:text-slate-600 group-hover:text-orange-500 transition mb-3" size={36} />
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       {selectedFile ? selectedFile.name : "Drag & drop archive or click to browse"}
                     </p>
-                    <p className="text-xs text-slate-600 mt-1 font-mono">
+                    <p className="text-xs text-slate-500 dark:text-slate-600 mt-1 font-mono">
                       {selectedFile ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB` : "ZIP archives up to 100MB"}
                     </p>
                   </div>
@@ -791,18 +791,18 @@ export default function ScanPage() {
               )}
 
               {activeTab === "github" && (
-                <div className="bg-slate-950/50 p-6 rounded-xl border border-slate-850 space-y-4 text-center">
+                <div className="bg-slate-50 dark:bg-slate-950/50 p-6 rounded-xl border border-slate-200 dark:border-slate-850 space-y-4 text-center">
                   <Github className="mx-auto text-slate-500 mb-2" size={32} />
                   {!isGitHubConnected ? (
                     isGitHubLoading ? (
                       <div className="space-y-4 py-4">
                         <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                        <p className="text-xs text-slate-400 font-mono">Connecting with GitHub account...</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Connecting with GitHub account...</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-slate-200">Import Directly from GitHub Account</p>
+                          <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Import Directly from GitHub Account</p>
                           <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
                             Authorize AURIX to access your public and private repositories for sandbox triage wargaming.
                           </p>
@@ -826,7 +826,7 @@ export default function ScanPage() {
                               setIsGitHubLoading(false);
                             }
                           }}
-                          className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                          className="px-5 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-semibold transition cursor-pointer shadow-sm"
                         >
                           {isGitHubLoading ? "Connecting GitHub..." : "Connect GitHub Account"}
                         </button>
@@ -834,10 +834,10 @@ export default function ScanPage() {
                     )
                   ) : (
                     <div className="space-y-4 text-left">
-                      <div className="flex items-center justify-between border-b border-slate-850 pb-3">
+                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-850 pb-3">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                          <p className="text-xs font-mono text-slate-300">
+                          <p className="text-xs font-mono text-slate-700 dark:text-slate-300">
                             CONNECTED: {
                               user?.user_metadata?.user_name ||
                               user?.user_metadata?.preferred_username ||
@@ -865,7 +865,7 @@ export default function ScanPage() {
                                 .finally(() => setIsReposLoading(false));
                             }}
                             disabled={isReposLoading}
-                            className="text-[10px] text-slate-400 hover:text-white font-mono transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                            className="text-[10px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-mono transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
                             title="Refresh real repositories"
                           >
                             <RefreshCw size={11} className={isReposLoading ? "animate-spin text-orange-500" : ""} />
@@ -881,7 +881,7 @@ export default function ScanPage() {
                                 localStorage.removeItem("aurix_github_connected");
                               }
                             }}
-                            className="text-[10px] text-slate-500 hover:text-red-400 font-mono transition cursor-pointer"
+                            className="text-[10px] text-slate-500 hover:text-red-500 dark:hover:text-red-400 font-mono transition cursor-pointer"
                           >
                             Disconnect
                           </button>
@@ -890,11 +890,11 @@ export default function ScanPage() {
 
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <label className="text-[10px] uppercase tracking-wider text-slate-400 font-mono block">
+                          <label className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono block">
                             Select Repository to scan
                           </label>
                           {isReposLoading && (
-                            <span className="text-[10px] text-orange-400 font-mono flex items-center gap-1">
+                            <span className="text-[10px] text-orange-600 dark:text-orange-400 font-mono flex items-center gap-1">
                               <RefreshCw size={10} className="animate-spin" /> Fetching real repos...
                             </span>
                           )}
@@ -907,7 +907,7 @@ export default function ScanPage() {
                               setSelectedRepo(e.target.value);
                               setManualRepoInput(e.target.value);
                             }}
-                            className="w-full bg-slate-950 border border-slate-850 text-slate-200 px-3 py-2.5 rounded-lg text-xs outline-none focus:border-orange-500 transition font-mono cursor-pointer"
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-850 text-slate-900 dark:text-slate-200 px-3 py-2.5 rounded-lg text-xs outline-none focus:border-orange-500 transition font-mono cursor-pointer"
                           >
                             <option value="">-- Choose Repository ({userRepos.length} available) --</option>
                             {userRepos.map((repo) => (
@@ -926,7 +926,7 @@ export default function ScanPage() {
                                 setSelectedRepo(e.target.value.trim());
                               }}
                               placeholder="Enter repo e.g. username/my-project"
-                              className="w-full bg-slate-950 border border-slate-850 text-slate-200 px-3 py-2.5 rounded-lg text-xs outline-none focus:border-orange-500 transition font-mono"
+                              className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-850 text-slate-900 dark:text-slate-200 px-3 py-2.5 rounded-lg text-xs outline-none focus:border-orange-500 transition font-mono"
                             />
                             <p className="text-[10px] text-slate-500 font-mono">
                               {isReposLoading 
@@ -939,7 +939,7 @@ export default function ScanPage() {
                         {userRepos.length > 0 && (
                           <div className="pt-1">
                             <details className="text-[11px] text-slate-500 font-mono cursor-pointer">
-                              <summary className="hover:text-slate-300">Or type custom repo manually</summary>
+                              <summary className="hover:text-slate-800 dark:hover:text-slate-300">Or type custom repo manually</summary>
                               <div className="mt-2">
                                 <input
                                   type="text"
@@ -949,7 +949,7 @@ export default function ScanPage() {
                                     setSelectedRepo(e.target.value.trim());
                                   }}
                                   placeholder="e.g. username/repo-name"
-                                  className="w-full bg-slate-950 border border-slate-850 text-slate-200 px-3 py-2 rounded-lg text-xs outline-none focus:border-orange-500 font-mono"
+                                  className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-850 text-slate-900 dark:text-slate-200 px-3 py-2 rounded-lg text-xs outline-none focus:border-orange-500 font-mono"
                                 />
                               </div>
                             </details>
@@ -968,7 +968,7 @@ export default function ScanPage() {
                   (activeTab === "zip" && !selectedFile) ||
                   (activeTab === "github" && (!isGitHubConnected || !selectedRepo))
                 }
-                className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 disabled:from-slate-900 disabled:to-slate-900 text-slate-950 disabled:text-slate-500 font-bold rounded-xl shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 disabled:shadow-none hover:scale-[1.01] transition duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 disabled:from-slate-200 disabled:to-slate-200 dark:disabled:from-slate-900 dark:disabled:to-slate-900 text-white dark:text-slate-950 disabled:text-slate-400 dark:disabled:text-slate-500 font-bold rounded-xl shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 disabled:shadow-none hover:scale-[1.01] transition duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Play size={16} fill="currentColor" />
                 Initiate Scan

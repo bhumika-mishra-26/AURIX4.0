@@ -231,16 +231,16 @@ export default function LetterGlitch({
       window.removeEventListener('resize', handleResize);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [glitchSpeed, smooth]);
+  }, [glitchSpeed, smooth, JSON.stringify(glitchColors)]);
 
   return (
-    <div className={`relative w-full h-full bg-black overflow-hidden ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden ${className}`}>
       <canvas ref={canvasRef} className="block w-full h-full" />
       {outerVignette && (
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none bg-[radial-gradient(circle,_rgba(0,0,0,0)_60%,_rgba(0,0,0,1)_100%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none bg-[radial-gradient(circle,_transparent_50%,_rgba(0,0,0,0.8)_100%)] dark:bg-[radial-gradient(circle,_transparent_50%,_rgba(2,6,23,0.95)_100%)]"></div>
       )}
       {centerVignette && (
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none bg-[radial-gradient(circle,_rgba(0,0,0,0.8)_0%,_rgba(0,0,0,0)_60%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none bg-[radial-gradient(circle,_rgba(0,0,0,0.6)_0%,_transparent_60%)]"></div>
       )}
     </div>
   );

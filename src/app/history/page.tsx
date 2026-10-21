@@ -203,7 +203,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col transition-colors duration-200">
       <Navbar showTutorButton={false} />
 
       <main className="flex-1 p-6 md:p-12 relative overflow-hidden">
@@ -218,20 +218,20 @@ export default function HistoryPage() {
           {/* Navigation back */}
           <button
             onClick={() => router.push("/dashboard")}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white font-mono transition cursor-pointer"
+            className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-mono transition cursor-pointer"
           >
             <ArrowLeft size={14} />
             Back to Dashboard
           </button>
 
           {/* Header */}
-          <div className="border-b border-slate-900 pb-6 flex items-start justify-between gap-4">
+          <div className="border-b border-slate-200 dark:border-slate-900 pb-6 flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5 mb-1">
                 <History className="text-orange-500" size={24} />
-                <h1 className="text-2xl font-bold tracking-tight text-white">Scan Session History</h1>
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Scan Session History</h1>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 Review and browse historical vulnerability wargaming assessment sessions.
               </p>
             </div>
@@ -239,7 +239,7 @@ export default function HistoryPage() {
               onClick={fetchScans}
               disabled={isLoading}
               title="Refresh"
-              className="p-2 border border-slate-800 bg-slate-900 rounded-xl text-slate-400 hover:text-white hover:border-orange-500/40 transition shrink-0 cursor-pointer disabled:opacity-40"
+              className="p-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-orange-500/40 transition shrink-0 cursor-pointer disabled:opacity-40 shadow-sm"
             >
               <RefreshCw size={15} className={isLoading ? "animate-spin" : ""} />
             </button>
@@ -247,7 +247,7 @@ export default function HistoryPage() {
 
           {/* Loading state */}
           {isLoading && (
-            <div className="flex flex-col items-center justify-center py-20 gap-4 text-slate-500 font-mono">
+            <div className="flex flex-col items-center justify-center py-20 gap-4 text-slate-500 dark:text-slate-400 font-mono">
               <Loader2 size={32} className="animate-spin text-orange-500" />
               <span className="text-sm">Loading scan history…</span>
             </div>
@@ -256,13 +256,13 @@ export default function HistoryPage() {
           {/* Error state */}
           {!isLoading && error && (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="flex items-center gap-2 text-red-400 text-sm font-mono">
+              <div className="flex items-center gap-2 text-red-500 dark:text-red-400 text-sm font-mono">
                 <AlertCircle size={16} />
                 <span>{error}</span>
               </div>
               <button
                 onClick={fetchScans}
-                className="px-4 py-2 bg-orange-500 text-slate-950 font-bold rounded-lg text-xs hover:bg-orange-400 transition cursor-pointer font-mono"
+                className="px-4 py-2 bg-orange-500 text-white dark:text-slate-950 font-bold rounded-lg text-xs hover:bg-orange-600 dark:hover:bg-orange-400 transition cursor-pointer font-mono"
               >
                 Retry
               </button>
@@ -272,11 +272,11 @@ export default function HistoryPage() {
           {/* Empty state */}
           {!isLoading && !error && historyItems.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-500">
-              <History size={36} className="text-slate-700" />
+              <History size={36} className="text-slate-400 dark:text-slate-700" />
               <p className="text-sm font-mono">No scans found. Run your first scan to see history here.</p>
               <button
                 onClick={() => router.push("/scan")}
-                className="mt-2 px-5 py-2 bg-orange-500 text-slate-950 font-bold rounded-lg text-xs hover:bg-orange-400 transition cursor-pointer font-mono"
+                className="mt-2 px-5 py-2 bg-orange-500 text-white dark:text-slate-950 font-bold rounded-lg text-xs hover:bg-orange-600 dark:hover:bg-orange-400 transition cursor-pointer font-mono"
               >
                 Launch Scan
               </button>
@@ -290,43 +290,43 @@ export default function HistoryPage() {
                 <div
                   key={item.id}
                   onClick={() => router.push(`/dashboard?scan_id=${item.id}`)}
-                  className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800 hover:border-orange-500/30 hover:shadow-lg hover:shadow-black/20 cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition duration-200 group"
+                  className="p-5 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 hover:border-orange-500/40 dark:hover:border-orange-500/30 hover:shadow-md dark:hover:shadow-black/20 cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition duration-200 group shadow-sm"
                 >
                   <div className="space-y-2 min-w-0">
                     <div className="space-y-0.5">
-                      <div className="text-sm font-semibold text-white font-mono truncate max-w-md group-hover:text-orange-400 transition">
+                      <div className="text-sm font-semibold text-slate-900 dark:text-white font-mono truncate max-w-md group-hover:text-orange-500 dark:group-hover:text-orange-400 transition">
                         {getScanLabel(item)}
                       </div>
-                      <div className="text-[10px] text-slate-500 font-mono uppercase tracking-wider">
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono uppercase tracking-wider">
                         scan id: {item.id.substring(0, 8)}…
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400">
+                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-500 dark:text-slate-400">
                       <div className="flex items-center gap-1.5">
-                        <Calendar size={12} className="text-slate-500" />
+                        <Calendar size={12} className="text-slate-400 dark:text-slate-500" />
                         <span>{formatDate(item.created_at)}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Shield size={12} className="text-slate-500" />
+                        <Shield size={12} className="text-slate-400 dark:text-slate-500" />
                         <span>{item.total_findings ?? "—"} findings</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Activity size={12} className="text-slate-500" />
+                        <Activity size={12} className="text-slate-400 dark:text-slate-500" />
                         <span className={getStatusColor(item.status)}>{getStatusLabel(item.status)}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Risk metrics and action */}
-                  <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t border-slate-800 sm:border-0 pt-3 sm:pt-0 shrink-0">
+                  <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t border-slate-100 dark:border-slate-800 sm:border-0 pt-3 sm:pt-0 shrink-0">
                     <div className="text-right">
                       <span className="text-xs text-slate-500 block font-mono uppercase">Findings</span>
                       <span className={`text-xl font-bold font-mono ${getRiskColor(item.total_findings)}`}>
                         {item.total_findings ?? "—"}
                       </span>
                     </div>
-                    <ChevronRight size={18} className="text-slate-600 hidden sm:block group-hover:text-orange-500 transition" />
+                    <ChevronRight size={18} className="text-slate-400 dark:text-slate-600 hidden sm:block group-hover:text-orange-500 transition" />
                   </div>
                 </div>
               ))}

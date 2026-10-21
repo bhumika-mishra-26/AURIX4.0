@@ -308,14 +308,7 @@ function DashboardContent() {
     // typing done — no restart
   }, [summaryIndex, fullSummary])
 
-  // Enforce permanent dark theme
-  useEffect(() => {
-    document.documentElement.classList.add("dark")
-    document.documentElement.classList.remove("light")
-    if (typeof window !== "undefined") {
-      localStorage.setItem("aurix_theme", "dark")
-    }
-  }, [])
+
 
   const handleUpdateStatus = async (id: string, newStatus: Vulnerability["status"]) => {
     setVulnerabilities(prev => prev.map(v => v.id === id ? { ...v, status: newStatus } : v))

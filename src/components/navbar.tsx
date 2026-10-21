@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
+import { useTheme } from "@/context/ThemeContext"
 import {
   ShieldCheck,
   LayoutDashboard,
@@ -13,7 +14,9 @@ import {
   MessageSquare,
   LogOut,
   User as UserIcon,
-  ChevronRight
+  ChevronRight,
+  Sun,
+  Moon
 } from "lucide-react"
 
 interface NavbarProps {
@@ -25,6 +28,7 @@ export default function Navbar({ onOpenTutor, showTutorButton = true }: NavbarPr
   const router = useRouter()
   const pathname = usePathname()
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -116,6 +120,15 @@ export default function Navbar({ onOpenTutor, showTutorButton = true }: NavbarPr
 
         {/* Right: Actions & Profile */}
         <div className="flex items-center gap-3">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 rounded-xl text-slate-600 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400 hover:border-orange-500/40 transition shadow-sm cursor-pointer"
+            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+
           {showTutorButton && onOpenTutor && (
             <button
               onClick={onOpenTutor}

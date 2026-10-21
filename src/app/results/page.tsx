@@ -273,32 +273,32 @@ function ResultsContent() {
   const resolvedCount = findings.filter(f => f.status === "resolved").length
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col transition-colors duration-200">
       <Navbar showTutorButton={false} />
 
       <main className="flex-1 p-4 md:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header Bar */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-slate-800">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/dashboard")}
-              className="p-2.5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-slate-400 hover:text-white transition cursor-pointer"
+              className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition cursor-pointer shadow-sm"
               title="Return to Dashboard"
             >
               <ArrowLeft size={16} />
             </button>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
                 Scan Exploit & Remediation Intelligence
                 {repoName && (
-                  <span className="text-xs px-2.5 py-1 rounded-full font-mono bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                  <span className="text-xs px-2.5 py-1 rounded-full font-mono bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
                     {repoName}
                   </span>
                 )}
               </h1>
-              <p className="text-xs text-slate-400 font-mono mt-0.5 flex items-center gap-2">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5 flex items-center gap-2">
                 <Database size={12} className="text-orange-500" />
                 {scanId ? `Active DB Scan: ${scanId}` : "Displaying live vulnerability database intelligence"}
               </p>
@@ -309,18 +309,18 @@ function ResultsContent() {
             {/* Scan ID input form */}
             <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 flex-1 sm:flex-none">
               <div className="relative flex-1 sm:w-80">
-                <Database size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Database size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   type="text"
                   placeholder="Query Scan ID (e.g. 0d136ef8-...)"
                   value={inputScanId}
                   onChange={(e) => setInputScanId(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 focus:border-orange-500 rounded-lg text-xs font-mono text-slate-200 outline-none transition"
+                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 focus:border-orange-500 rounded-lg text-xs font-mono text-slate-900 dark:text-slate-200 outline-none transition"
                 />
               </div>
               <button
                 type="submit"
-                className="px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-slate-950 font-bold rounded-lg text-xs transition cursor-pointer shrink-0"
+                className="px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-white dark:text-slate-950 font-bold rounded-lg text-xs transition cursor-pointer shrink-0 shadow-sm"
               >
                 Fetch Scan
               </button>
@@ -329,7 +329,7 @@ function ResultsContent() {
             <button
               onClick={() => loadScanData(scanId)}
               disabled={isLoading}
-              className="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition text-slate-300 disabled:opacity-50 cursor-pointer"
+              className="px-3 py-2 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition text-slate-700 dark:text-slate-300 disabled:opacity-50 cursor-pointer shadow-sm"
             >
               <RefreshCw size={13} className={isLoading ? "animate-spin text-orange-500" : ""} />
               Refresh
@@ -337,7 +337,7 @@ function ResultsContent() {
 
             <button
               onClick={() => router.push(`/dashboard${scanId ? `?scan_id=${scanId}` : ""}`)}
-              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-lg text-xs flex items-center gap-1.5 hover:scale-[1.02] transition shadow cursor-pointer"
+              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white dark:text-slate-950 font-bold rounded-lg text-xs flex items-center gap-1.5 hover:scale-[1.02] transition shadow cursor-pointer"
             >
               Wargame Kanban
               <ExternalLink size={13} />
@@ -347,62 +347,62 @@ function ResultsContent() {
 
         {/* Stats Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-1">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono">
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-mono">
               <span>Total Threat Vectors</span>
-              <Shield size={14} className="text-slate-500" />
+              <Shield size={14} className="text-slate-400 dark:text-slate-500" />
             </div>
-            <div className="text-2xl font-bold font-mono text-white">{totalFindings}</div>
-            <div className="text-[11px] text-slate-500">Stored in database</div>
+            <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white">{totalFindings}</div>
+            <div className="text-[11px] text-slate-400 dark:text-slate-500">Stored in database</div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-1">
-            <div className="flex items-center justify-between text-orange-400 text-xs font-mono">
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+            <div className="flex items-center justify-between text-orange-600 dark:text-orange-400 text-xs font-mono">
               <span>Red Exploit PoCs</span>
               <Terminal size={14} className="text-orange-500" />
             </div>
-            <div className="text-2xl font-bold font-mono text-orange-400">{withRedPoc}</div>
-            <div className="text-[11px] text-slate-500">Auto-generated wargame scripts</div>
+            <div className="text-2xl font-bold font-mono text-orange-600 dark:text-orange-400">{withRedPoc}</div>
+            <div className="text-[11px] text-slate-400 dark:text-slate-500">Auto-generated wargame scripts</div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-1">
-            <div className="flex items-center justify-between text-blue-400 text-xs font-mono">
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+            <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 text-xs font-mono">
               <span>Blue Remediation Patches</span>
               <Code size={14} className="text-blue-500" />
             </div>
-            <div className="text-2xl font-bold font-mono text-blue-400">{withBluePatch}</div>
-            <div className="text-[11px] text-slate-500">Verified code fixes</div>
+            <div className="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{withBluePatch}</div>
+            <div className="text-[11px] text-slate-400 dark:text-slate-500">Verified code fixes</div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-1">
-            <div className="flex items-center justify-between text-emerald-400 text-xs font-mono">
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+            <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 text-xs font-mono">
               <span>Neutralized / Resolved</span>
               <CheckCircle2 size={14} className="text-emerald-500" />
             </div>
-            <div className="text-2xl font-bold font-mono text-emerald-400">{resolvedCount}</div>
-            <div className="text-[11px] text-slate-500">Remediated in codebase</div>
+            <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{resolvedCount}</div>
+            <div className="text-[11px] text-slate-400 dark:text-slate-500">Remediated in codebase</div>
           </div>
         </div>
 
         {/* Filter / Search Row */}
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800/80">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-white dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm">
           <div className="relative flex-1 max-w-md">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Filter by vulnerability name or file path..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-950/70 border border-slate-800 rounded-lg text-xs text-slate-200 outline-none focus:border-orange-500 font-mono transition"
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-200 outline-none focus:border-orange-500 font-mono transition"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Filter size={12} className="text-slate-500" />
+            <Filter size={12} className="text-slate-400 dark:text-slate-500" />
             <select
               value={severityFilter}
               onChange={(e) => setSeverityFilter(e.target.value)}
-              className="bg-slate-950/70 border border-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-mono outline-none focus:border-orange-500 cursor-pointer"
+              className="bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-mono outline-none focus:border-orange-500 cursor-pointer"
             >
               <option value="All">All Severities</option>
               <option value="Critical">Critical</option>
@@ -415,18 +415,18 @@ function ResultsContent() {
 
         {/* Content Section */}
         {isLoading ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-3 text-slate-400">
+          <div className="py-24 flex flex-col items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
             <Loader2 className="animate-spin text-orange-500" size={32} />
             <span className="text-xs font-mono text-slate-500">Querying scan exploits & remediation intelligence from database...</span>
           </div>
         ) : findings.length === 0 ? (
-          <div className="p-12 text-center bg-slate-900/30 border border-slate-800 rounded-2xl space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <div className="p-12 text-center bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-sm">
+            <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
               <ShieldCheck size={28} />
             </div>
             <div className="space-y-1.5">
-              <h3 className="text-base font-semibold text-white">No Database Findings Found for this Query</h3>
-              <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white">No Database Findings Found for this Query</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
                 {scanId 
                   ? `No verified vulnerabilities exist in the database with Scan ID "${scanId}". Verify the scan UUID or query another session.`
                   : "No active scan findings are currently stored. Launch a new repository scan or query by Scan ID above."
@@ -436,7 +436,7 @@ function ResultsContent() {
             <div className="flex justify-center gap-3 pt-2">
               <button
                 onClick={() => router.push("/scan")}
-                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold text-xs rounded-lg transition hover:scale-[1.02] cursor-pointer"
+                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white dark:text-slate-950 font-bold text-xs rounded-lg transition hover:scale-[1.02] cursor-pointer shadow-sm"
               >
                 Launch New Scan
               </button>
@@ -446,7 +446,7 @@ function ResultsContent() {
                   setInputScanId("")
                   loadScanData("")
                 }}
-                className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-lg hover:bg-slate-800 transition cursor-pointer"
+                className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer shadow-sm"
               >
                 Load All Active
               </button>
@@ -462,17 +462,17 @@ function ResultsContent() {
               return (
                 <div 
                   key={v.id} 
-                  className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-900/30 hover:border-slate-700/80 transition shadow-sm"
+                  className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900/30 hover:border-slate-300 dark:hover:border-slate-700/80 transition shadow-sm"
                 >
                   {/* Finding Main Card Header */}
                   <div 
                     onClick={() => toggleExpand(v.id)}
-                    className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-slate-900/50 transition select-none"
+                    className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 transition select-none"
                   >
                     <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
                       <button 
                         type="button" 
-                        className="p-1 text-slate-500 hover:text-white rounded transition shrink-0 mt-0.5 sm:mt-0"
+                        className="p-1 text-slate-400 hover:text-slate-900 dark:text-slate-500 dark:hover:text-white rounded transition shrink-0 mt-0.5 sm:mt-0"
                       >
                         {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                       </button>
@@ -482,28 +482,28 @@ function ResultsContent() {
                           <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold border ${getSeverityBadge(v.severity)}`}>
                             {v.severity}
                           </span>
-                          <span className="text-[11px] font-mono text-slate-400">CVSS {v.cvss.toFixed(1)}</span>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">CVSS {v.cvss.toFixed(1)}</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                             {v.layer}
                           </span>
                           {v.tool && (
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800/80 text-orange-400 border border-orange-500/20">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-50 dark:bg-slate-800/80 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20">
                               {v.tool}
                             </span>
                           )}
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-emerald-400 border border-emerald-500/20">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
                             {v.wargameStatus}
                           </span>
                         </div>
 
-                        <h3 className="text-sm font-semibold text-white truncate flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate flex items-center gap-2">
                           {v.vuln}
                         </h3>
 
-                        <div className="flex items-center gap-2 text-xs font-mono text-slate-400 truncate">
-                          <FileCode size={13} className="text-slate-500 shrink-0" />
+                        <div className="flex items-center gap-2 text-xs font-mono text-slate-500 dark:text-slate-400 truncate">
+                          <FileCode size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
                           <span className="truncate">{v.file}</span>
-                          <span className="text-slate-600 shrink-0">line {v.codeLine}</span>
+                          <span className="text-slate-400 dark:text-slate-600 shrink-0">line {v.codeLine}</span>
                         </div>
                       </div>
                     </div>
@@ -518,8 +518,8 @@ function ResultsContent() {
                         }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-1.5 border transition cursor-pointer ${
                           hasPoc 
-                            ? "bg-orange-500/10 text-orange-400 border-orange-500/30 hover:bg-orange-500/20 shadow-sm" 
-                            : "bg-slate-800 text-slate-500 border-slate-700 opacity-60"
+                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30 hover:bg-orange-500/20 shadow-sm" 
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-60"
                         }`}
                         title="View Red Agent Exploit Script"
                       >
@@ -535,8 +535,8 @@ function ResultsContent() {
                         }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-1.5 border transition cursor-pointer ${
                           hasPatch 
-                            ? "bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20 shadow-sm" 
-                            : "bg-slate-800 text-slate-500 border-slate-700 opacity-60"
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/20 shadow-sm" 
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-60"
                         }`}
                         title="View Blue Agent Remediation Patch"
                       >
@@ -547,7 +547,7 @@ function ResultsContent() {
                       <button
                         type="button"
                         onClick={() => toggleExpand(v.id)}
-                        className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-mono text-slate-300 transition cursor-pointer flex items-center gap-1"
+                        className="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-700 dark:text-slate-300 transition cursor-pointer flex items-center gap-1"
                         title={isExpanded ? "Collapse inline code" : "Expand inline code view"}
                       >
                         {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -558,22 +558,22 @@ function ResultsContent() {
 
                   {/* Expanded Dual-Pane View: Red Exploit & Blue Patch */}
                   {isExpanded && (
-                    <div className="border-t border-slate-800/80 bg-slate-950/60 p-5 space-y-5 animate-in fade-in duration-200">
+                    <div className="border-t border-slate-200 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/60 p-5 space-y-5 animate-in fade-in duration-200">
                       
                       {/* AI Reasoning & Vulnerable Sink Banner */}
                       {v.aiReasoning && (
-                        <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-1.5">
-                          <div className="flex items-center gap-2 text-slate-300 font-semibold font-mono text-[11px] uppercase tracking-wider">
+                        <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-sm">
+                          <div className="flex items-center gap-2 text-slate-800 dark:text-slate-300 font-semibold font-mono text-[11px] uppercase tracking-wider">
                             <Sparkles size={13} className="text-orange-500" />
                             AI Wargaming Sandbox Verification
                           </div>
-                          <p className="text-slate-400 leading-relaxed font-sans">
+                          <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-sans">
                             {v.aiReasoning}
                           </p>
                           {v.vulnCode && (
-                            <div className="mt-2 pt-2 border-t border-slate-800 flex items-start gap-2 text-slate-400 font-mono text-[11px]">
-                              <span className="text-red-400 font-bold shrink-0">[Sink Line {v.codeLine}]:</span>
-                              <code className="text-slate-300 break-all bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-start gap-2 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
+                              <span className="text-red-500 dark:text-red-400 font-bold shrink-0">[Sink Line {v.codeLine}]:</span>
+                              <code className="text-slate-800 dark:text-slate-300 break-all bg-slate-100 dark:bg-slate-950 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                                 {v.vulnCode}
                               </code>
                             </div>
@@ -585,21 +585,21 @@ function ResultsContent() {
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         
                         {/* 🔴 RED AGENT EXPLOIT SCRIPT */}
-                        <div className="rounded-xl bg-slate-950 border border-orange-500/20 overflow-hidden flex flex-col">
-                          <div className="p-3 bg-orange-500/10 border-b border-orange-500/20 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-orange-400 font-mono text-xs font-bold">
-                              <Terminal size={14} className="text-orange-500" />
+                        <div className="rounded-xl bg-orange-50/40 dark:bg-slate-950 border border-orange-200 dark:border-orange-500/20 overflow-hidden flex flex-col shadow-sm">
+                          <div className="p-3 bg-orange-100/60 dark:bg-orange-500/10 border-b border-orange-200 dark:border-orange-500/20 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400 font-mono text-xs font-bold">
+                              <Terminal size={14} className="text-orange-600 dark:text-orange-500" />
                               <span>RED AGENT EXPLOIT CODE</span>
-                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300">Masked PoC</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-200/70 dark:bg-orange-500/20 text-orange-800 dark:text-orange-300">Masked PoC</span>
                             </div>
                             <button
                               onClick={() => copyToClipboard(v.pocScript, `poc-${v.id}`)}
-                              className="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-mono flex items-center gap-1 transition cursor-pointer"
+                              className="px-2.5 py-1 rounded bg-white dark:bg-slate-900 hover:bg-orange-50 dark:hover:bg-slate-800 border border-orange-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-mono flex items-center gap-1 transition cursor-pointer shadow-xs"
                             >
                               {copiedKey === `poc-${v.id}` ? (
                                 <>
-                                  <Check size={11} className="text-green-400" />
-                                  <span className="text-green-400">Copied!</span>
+                                  <Check size={11} className="text-green-600 dark:text-green-400" />
+                                  <span className="text-green-600 dark:text-green-400 font-semibold">Copied!</span>
                                 </>
                               ) : (
                                 <>
@@ -611,34 +611,34 @@ function ResultsContent() {
                           </div>
                           
                           {/* Masked Exploit Notice */}
-                          <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-start gap-2 text-[11px] text-amber-200 leading-relaxed">
-                            <AlertCircle size={13} className="shrink-0 text-amber-400 mt-0.5" />
+                          <div className="px-3 py-2 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-200 leading-relaxed">
+                            <AlertCircle size={13} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
                             <span>
                               <strong>Security Note:</strong> This is a <strong>masked version of the real exploit</strong>. It does not provide actionable attack code, but serves to assure users that automated wargaming has happened and the patch is verified internally by our system.
                             </span>
                           </div>
 
-                          <div className="p-4 flex-1 overflow-x-auto font-mono text-xs text-orange-300/90 leading-relaxed max-h-96">
+                          <div className="p-4 flex-1 overflow-x-auto font-mono text-xs text-orange-950 dark:text-orange-300/90 leading-relaxed max-h-96 bg-white/70 dark:bg-transparent">
                             <pre className="whitespace-pre-wrap break-words">{v.pocScript}</pre>
                           </div>
                         </div>
 
                         {/* 🔵 BLUE AGENT CODE PATCH */}
-                        <div className="rounded-xl bg-slate-950 border border-blue-500/20 overflow-hidden flex flex-col">
-                          <div className="p-3 bg-blue-500/10 border-b border-blue-500/20 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-blue-400 font-mono text-xs font-bold">
-                              <Code size={14} className="text-blue-500" />
+                        <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-blue-200 dark:border-blue-500/20 overflow-hidden flex flex-col shadow-sm">
+                          <div className="p-3 bg-blue-100/60 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-mono text-xs font-bold">
+                              <Code size={14} className="text-blue-600 dark:text-blue-500" />
                               <span>BLUE AGENT REMEDIATION PATCH</span>
-                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300">Fix</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-200/70 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300">Fix</span>
                             </div>
                             <button
                               onClick={() => copyToClipboard(v.patchCode, `patch-${v.id}`)}
-                              className="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-mono flex items-center gap-1 transition cursor-pointer"
+                              className="px-2.5 py-1 rounded bg-white dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-slate-800 border border-blue-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-mono flex items-center gap-1 transition cursor-pointer shadow-xs"
                             >
                               {copiedKey === `patch-${v.id}` ? (
                                 <>
-                                  <Check size={11} className="text-green-400" />
-                                  <span className="text-green-400">Copied!</span>
+                                  <Check size={11} className="text-green-600 dark:text-green-400" />
+                                  <span className="text-green-600 dark:text-green-400 font-semibold">Copied!</span>
                                 </>
                               ) : (
                                 <>
@@ -649,16 +649,16 @@ function ResultsContent() {
                             </button>
                           </div>
 
-                          <div className="p-4 flex-1 overflow-x-auto font-mono text-xs leading-relaxed max-h-96">
+                          <div className="p-4 flex-1 overflow-x-auto font-mono text-xs leading-relaxed max-h-96 bg-white/70 dark:bg-transparent">
                             <pre className="space-y-0.5 whitespace-pre-wrap break-words">
                               {v.patchCode.split("\n").map((line, idx) => {
                                 const isAdded = line.startsWith("+")
                                 const isRemoved = line.startsWith("-")
                                 const style = isAdded
-                                  ? "bg-green-950/40 text-green-300 px-1 rounded"
+                                  ? "bg-emerald-100 text-emerald-900 dark:bg-green-950/40 dark:text-green-300 px-1 rounded font-medium"
                                   : isRemoved
-                                  ? "bg-red-950/40 text-red-300 px-1 rounded"
-                                  : "text-slate-300"
+                                  ? "bg-rose-100 text-rose-900 dark:bg-red-950/40 dark:text-red-300 px-1 rounded font-medium"
+                                  : "text-slate-700 dark:text-slate-300"
                                 return (
                                   <div key={idx} className={style}>
                                     {line}
@@ -673,8 +673,8 @@ function ResultsContent() {
 
                       {/* Card Footer Actions */}
                       <div className="flex flex-wrap justify-between items-center gap-3 pt-2">
-                        <div className="text-[11px] font-mono text-slate-500">
-                          Rule: <span className="text-slate-400">{v.ruleId}</span> | Category: <span className="text-slate-400">{v.category}</span>
+                        <div className="text-[11px] font-mono text-slate-500 dark:text-slate-500">
+                          Rule: <span className="text-slate-600 dark:text-slate-400">{v.ruleId}</span> | Category: <span className="text-slate-600 dark:text-slate-400">{v.category}</span>
                         </div>
                         <div className="flex gap-2">
                           <button
@@ -720,7 +720,7 @@ function ResultsContent() {
 export default function ResultsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-3 text-slate-400">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
         <Loader2 className="animate-spin text-orange-500" size={32} />
         <span className="text-xs font-mono text-slate-500">Loading Scan Intelligence...</span>
       </div>

@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Github, Mail, Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2 } from "lucide-react"
+import { Github, Mail, Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2, Sun, Moon } from "lucide-react"
 import { authService } from "@/services/auth.service"
 import { useAuth } from "@/context/AuthContext"
+import { useTheme } from "@/context/ThemeContext"
 import { supabase } from "@/services/supabaseClient"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { theme, toggleTheme } = useTheme()
   const [isLogin, setIsLogin] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
@@ -220,14 +222,25 @@ export default function LoginPage() {
 
 
   return (
-    <main className="min-h-screen relative flex items-center justify-center bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <main className="min-h-screen relative flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
+      {/* Top right controls */}
+      <div className="absolute top-6 right-6 z-20 flex items-center gap-2">
+        <button
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+          className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors shadow-sm cursor-pointer"
+        >
+          {theme === "dark" ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} className="text-slate-700" />}
+        </button>
+      </div>
+
       {/* Background Tech Theme Deco */}
       <div className="absolute inset-0 z-0">
-        {/* Dark Grid */}
+        {/* Grid pattern */}
         <div 
-          className="absolute inset-0 opacity-[0.08]" 
+          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]" 
           style={{ 
-            backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
             backgroundSize: '40px 40px' 
           }} 
         />
@@ -237,7 +250,7 @@ export default function LoginPage() {
         <div className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px] animate-pulse duration-[7000ms]" />
         
         {/* Tech Code Elements */}
-        <div className="absolute top-10 left-10 font-mono text-[10px] text-slate-700 select-none hidden md:block">
+        <div className="absolute top-10 left-10 font-mono text-[10px] text-slate-400 dark:text-slate-700 select-none hidden md:block">
           AURIX_SYSTEM_INIT // OK<br />
           SECURE_PORT_ACTIVE // 443<br />
           SHIELD_STATUS // ENFORCED
@@ -251,27 +264,27 @@ export default function LoginPage() {
             <div className="p-2 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 text-slate-950 font-bold shadow-lg shadow-orange-500/25">
               <ShieldCheck size={28} />
             </div>
-            <span className="text-2xl font-black tracking-tight text-white">
+            <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
               AURIX<span className="text-orange-500">.</span>
             </span>
           </div>
-          <p className="text-xs text-slate-400 uppercase tracking-widest font-mono">
+          <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">
             Agentic Unified Risk Intelligence Platform
           </p>
         </div>
 
         {/* Card */}
-        <div className="w-full bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800/80 shadow-2xl overflow-hidden shadow-black/50">
+        <div className="w-full bg-white/85 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-xl dark:shadow-2xl overflow-hidden shadow-slate-200/50 dark:shadow-black/50">
           
           {isResettingPassword ? (
             <div className="p-8">
-              <h2 className="text-xl font-bold text-white mb-2">Set New Password</h2>
-              <p className="text-xs text-slate-400 mb-6 font-sans">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Set New Password</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 font-sans">
                 Enter your new secure password below to restore access to your account.
               </p>
 
               {error && (
-                <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
+                <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-xs flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -279,9 +292,9 @@ export default function LoginPage() {
 
               <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">New Password</label>
+                  <label className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">New Password</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
                       <Lock size={16} />
                     </span>
                     <input
@@ -290,13 +303,13 @@ export default function LoginPage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       autoComplete="new-password"
-                      className="w-full pl-10 pr-12 py-3 bg-slate-950/50 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-200 placeholder-slate-600 text-sm outline-none transition duration-200"
+                      className="w-full pl-10 pr-12 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 text-sm outline-none transition duration-200"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"
                     >
                       {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -304,9 +317,9 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">Confirm New Password</label>
+                  <label className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">Confirm New Password</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
                       <Lock size={16} />
                     </span>
                     <input
@@ -315,7 +328,7 @@ export default function LoginPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       autoComplete="new-password"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-950/50 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-200 placeholder-slate-600 text-sm outline-none transition duration-200"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 text-sm outline-none transition duration-200"
                       required
                     />
                   </div>
@@ -324,10 +337,10 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full mt-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-lg shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 hover:scale-[1.01] transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full mt-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white dark:text-slate-950 font-bold rounded-lg shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 hover:scale-[1.01] transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white dark:border-slate-950 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
                       Save New Password
@@ -343,7 +356,7 @@ export default function LoginPage() {
                     setIsLogin(true)
                     setError("")
                   }}
-                  className="w-full py-3 bg-transparent border border-slate-800/80 hover:border-slate-700 text-slate-400 hover:text-slate-200 text-xs font-semibold rounded-lg transition cursor-pointer"
+                  className="w-full py-3 bg-transparent border border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 text-xs font-semibold rounded-lg transition cursor-pointer"
                 >
                   Return to Sign In
                 </button>
@@ -353,19 +366,19 @@ export default function LoginPage() {
             <div className="p-8">
               {recoverySent ? (
                 <div className="space-y-6 text-center">
-                  <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/5">
+                  <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/5">
                     <Mail size={28} />
                   </div>
 
                   <div className="space-y-2">
-                    <h2 className="text-xl font-bold text-white">Check Your Email</h2>
-                    <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Check Your Email</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
                       We have sent a password reset link to:
                     </p>
-                    <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-sm font-medium text-orange-400 font-mono select-all">
+                    <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-sm font-medium text-orange-600 dark:text-orange-400 font-mono select-all">
                       {recoveryEmail}
                     </div>
-                    <p className="text-[11px] text-slate-500 pt-2 leading-relaxed">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-2 leading-relaxed">
                       Click the link in the email to set a new password. If you don't see it, please check your spam or junk folder.
                     </p>
                   </div>
@@ -379,7 +392,7 @@ export default function LoginPage() {
                         setRecoveryEmail("");
                         setError("");
                       }}
-                      className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-lg shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 hover:scale-[1.01] transition duration-200 text-sm font-semibold cursor-pointer"
+                      className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white dark:text-slate-950 font-bold rounded-lg shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 hover:scale-[1.01] transition duration-200 text-sm font-semibold cursor-pointer"
                     >
                       Back to Sign In
                     </button>
@@ -389,7 +402,7 @@ export default function LoginPage() {
                       onClick={() => {
                         setRecoverySent(false);
                       }}
-                      className="text-xs text-slate-400 hover:text-slate-200 transition underline underline-offset-4 cursor-pointer"
+                      className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition underline underline-offset-4 cursor-pointer"
                     >
                       Didn't receive the email? Try again
                     </button>
@@ -398,14 +411,14 @@ export default function LoginPage() {
               ) : (
                 <>
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold text-white mb-2">Forgot Password?</h2>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Forgot Password?</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Enter your registered email address below and we'll send you a link to reset your password.
                     </p>
                   </div>
 
                   {error && (
-                    <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
+                    <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-xs flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                       <span>{error}</span>
                     </div>
@@ -413,9 +426,9 @@ export default function LoginPage() {
 
                   <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
                     <div className="space-y-1">
-                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">Email Address</label>
+                      <label className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">Email Address</label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
                           <Mail size={16} />
                         </span>
                         <input
@@ -423,7 +436,7 @@ export default function LoginPage() {
                           placeholder="name@example.com"
                           value={recoveryEmail}
                           onChange={(e) => setRecoveryEmail(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 bg-slate-950/50 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-200 placeholder-slate-600 text-sm outline-none transition duration-200"
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 text-sm outline-none transition duration-200"
                           required
                         />
                       </div>
@@ -432,10 +445,10 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full mt-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-lg shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 hover:scale-[1.01] transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+                      className="w-full mt-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white dark:text-slate-950 font-bold rounded-lg shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 hover:scale-[1.01] transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
                     >
                       {isLoading ? (
-                        <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white dark:border-slate-950 border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
                           Send Reset Link
@@ -450,7 +463,7 @@ export default function LoginPage() {
                         setIsForgotPassword(false);
                         setError("");
                       }}
-                      className="w-full py-3 bg-transparent border border-slate-800/80 hover:border-slate-700 text-slate-400 hover:text-slate-200 text-xs font-semibold rounded-lg transition cursor-pointer"
+                      className="w-full py-3 bg-transparent border border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 text-xs font-semibold rounded-lg transition cursor-pointer"
                     >
                       Cancel and Return to Sign In
                     </button>
@@ -461,13 +474,13 @@ export default function LoginPage() {
           ) : (
             <>
               {/* Tabs */}
-              <div className="flex border-b border-slate-800">
+              <div className="flex border-b border-slate-200 dark:border-slate-800">
                 <button
                   onClick={() => { setIsLogin(true); setError(""); }}
                   className={`flex-1 py-4 text-center text-sm font-semibold tracking-wide transition duration-300 ${
                     isLogin 
-                      ? "text-orange-500 border-b-2 border-orange-500 bg-slate-900/40" 
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "text-orange-500 border-b-2 border-orange-500 bg-orange-500/5 dark:bg-slate-900/40" 
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                   }`}
                 >
                   Sign In
@@ -476,8 +489,8 @@ export default function LoginPage() {
                   onClick={() => { setIsLogin(false); setError(""); }}
                   className={`flex-1 py-4 text-center text-sm font-semibold tracking-wide transition duration-300 ${
                     !isLogin 
-                      ? "text-orange-500 border-b-2 border-orange-500 bg-slate-900/40" 
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "text-orange-500 border-b-2 border-orange-500 bg-orange-500/5 dark:bg-slate-900/40" 
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                   }`}
                 >
                   Create Account
@@ -485,17 +498,17 @@ export default function LoginPage() {
               </div>
 
               <div className="p-8">
-                <h2 className="text-xl font-bold text-white mb-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
                   {isLogin ? "Sign In to AURIX Platform" : "Create Account"}
                 </h2>
-                <p className="text-xs text-slate-400 mb-6">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
                   {isLogin 
                     ? "Enter your registered credentials to access the risk intelligence portal." 
                     : "Create an account to configure automated vulnerability scanning and remediation features."}
                 </p>
 
                 {error && (
-                  <div className="mb-4 p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs flex flex-col gap-2">
+                  <div className="mb-4 p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-500 dark:text-red-400 text-xs flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                       <span>{error}</span>
@@ -507,7 +520,7 @@ export default function LoginPage() {
                           setIsLogin(true)
                           setError("")
                         }}
-                        className="text-left text-[11px] text-orange-400 hover:text-orange-300 font-semibold underline underline-offset-2 ml-3.5 cursor-pointer"
+                        className="text-left text-[11px] text-orange-600 dark:text-orange-400 hover:text-orange-500 font-semibold underline underline-offset-2 ml-3.5 cursor-pointer"
                       >
                         Switch to Sign In with this email →
                       </button>
@@ -516,7 +529,7 @@ export default function LoginPage() {
                 )}
 
                 {successMessage && (
-                  <div className="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
+                  <div className="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
                     <span>{successMessage}</span>
                   </div>
@@ -526,9 +539,9 @@ export default function LoginPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {!isLogin && (
                     <div className="space-y-1">
-                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">Full Name</label>
+                      <label className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">Full Name</label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
                           <User size={16} />
                         </span>
                         <input
@@ -537,7 +550,7 @@ export default function LoginPage() {
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           autoComplete="name"
-                          className="w-full pl-10 pr-4 py-3 bg-slate-950/50 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-200 placeholder-slate-600 text-sm outline-none transition duration-200"
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 text-sm outline-none transition duration-200"
                           required
                         />
                       </div>
@@ -545,9 +558,9 @@ export default function LoginPage() {
                   )}
 
                   <div className="space-y-1">
-                    <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">Email Address</label>
+                    <label className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">Email Address</label>
                     <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
                         <Mail size={16} />
                       </span>
                       <input
@@ -556,7 +569,7 @@ export default function LoginPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         autoComplete="email"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-950/50 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-200 placeholder-slate-600 text-sm outline-none transition duration-200"
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 text-sm outline-none transition duration-200"
                         required
                       />
                     </div>
@@ -564,18 +577,18 @@ export default function LoginPage() {
 
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
-                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">Password</label>
+                      <label className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">Password</label>
                       {isLogin && (
                         <span 
                           onClick={() => { setIsForgotPassword(true); setError(""); }}
-                          className="text-[10px] text-orange-500/80 hover:text-orange-500 cursor-pointer font-medium transition"
+                          className="text-[10px] text-orange-600 dark:text-orange-500 hover:text-orange-500 cursor-pointer font-medium transition"
                         >
                           Forgot?
                         </span>
                       )}
                     </div>
                     <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
                         <Lock size={16} />
                       </span>
                       <input
@@ -584,13 +597,13 @@ export default function LoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         autoComplete={isLogin ? "current-password" : "new-password"}
-                        className="w-full pl-10 pr-12 py-3 bg-slate-950/50 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-200 placeholder-slate-600 text-sm outline-none transition duration-200"
+                        className="w-full pl-10 pr-12 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 text-sm outline-none transition duration-200"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"
                       >
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -602,9 +615,9 @@ export default function LoginPage() {
                       <input
                         type="checkbox"
                         defaultChecked
-                        className="w-4 h-4 rounded accent-orange-500 bg-slate-900 border-slate-700 cursor-pointer focus:ring-0 focus:ring-offset-0"
+                        className="w-4 h-4 rounded accent-orange-500 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 cursor-pointer focus:ring-0 focus:ring-offset-0"
                       />
-                      <span className="text-xs text-slate-400 hover:text-slate-300 transition">
+                      <span className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition">
                         {isLogin ? "Keep me authenticated" : "I agree to Terms & Conditions"}
                       </span>
                     </label>
@@ -613,10 +626,10 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold rounded-lg shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 hover:scale-[1.01] transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    className="w-full mt-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white dark:text-slate-950 font-bold rounded-lg shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 hover:scale-[1.01] transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {isLoading ? (
-                      <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-white dark:border-slate-950 border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
                         {isLogin ? "Initialize Session" : "Create Account"}
@@ -628,10 +641,10 @@ export default function LoginPage() {
 
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-800" />
+                    <div className="w-full border-t border-slate-200 dark:border-slate-800" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-slate-900 px-3 text-slate-500 font-mono">Secure Access Gate</span>
+                    <span className="bg-white dark:bg-slate-900 px-3 text-slate-400 dark:text-slate-500 font-mono">Secure Access Gate</span>
                   </div>
                 </div>
 
@@ -639,7 +652,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleGitHubLogin}
                   disabled={oauthLoading}
-                  className="w-full flex items-center justify-center gap-2 border border-slate-800 bg-slate-950/20 hover:bg-slate-950/50 hover:border-slate-700 py-3.5 rounded-lg text-sm text-slate-300 font-semibold transition cursor-pointer disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/20 hover:bg-slate-100 dark:hover:bg-slate-950/50 hover:border-slate-300 dark:hover:border-slate-700 py-3.5 rounded-lg text-sm text-slate-700 dark:text-slate-300 font-semibold transition cursor-pointer disabled:opacity-50 shadow-sm"
                 >
                   <Github size={18} />
                   {oauthLoading ? "Connecting to GitHub..." : "Continue with GitHub"}
@@ -652,7 +665,7 @@ export default function LoginPage() {
                       setError("")
                       setShowOAuthModal(true)
                     }}
-                    className="text-[11px] text-slate-500 hover:text-slate-400 transition underline underline-offset-4 font-mono cursor-pointer"
+                    className="text-[11px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-400 transition underline underline-offset-4 font-mono cursor-pointer"
                   >
                     Or open Sandbox Demo Mode
                   </button>
